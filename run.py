@@ -2,7 +2,10 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from apps import background
+from apps import background, models
+from apps.database import engine
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title='今天吃什么',
