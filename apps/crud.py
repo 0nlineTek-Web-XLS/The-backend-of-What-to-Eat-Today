@@ -1,13 +1,15 @@
 from sqlalchemy.orm import Session
 from .models import *
+from .schemas import *
 from fastapi import HTTPException
 
 
 # 具体变量的含义参见 models.py
-def add_manager(db: Session, username: str, hashed_password: str):
+def add_manager(db: Session, username: str, hashed_password: str, permission: bool = False):
     manager_dict = {
         "username": username,
         "hashed_password": hashed_password,
+        "permission": permission
     }
     manager = Managers(**manager_dict)
     db.add(manager)
@@ -22,8 +24,8 @@ def get_manager(db: Session, username: str):
 
 def add_campus(db: Session, name: str):
     campus_dict = {
-        "CampusName": name,
-        "CanteenNum": 0
+        "campus_name": name,
+        "canteen_num": 0
     }
     campus = Campus(**campus_dict)
     db.add(campus)
@@ -33,12 +35,12 @@ def add_campus(db: Session, name: str):
 
 def add_campus_canteen_num(db: Session, canteen_id: int):
     campus = get_campus_by_id(db, canteen_id)
-    campus.CanteenNum += 1
+    campus.canteen_num += 1
 
 
 # 可以判断餐厅是否存在
 def get_campus_by_name(db: Session, name: str):
-    return db.query(Campus).filter(Campus.CampusName == name).first()
+    return db.query(Campus).filter(Campus.campus_name == name).first()
 
 
 def get_campus_by_id(db: Session, campus_id: int):
@@ -47,12 +49,12 @@ def get_campus_by_id(db: Session, campus_id: int):
 
 def add_canteen(db: Session, canteen_name: str, campus_id: int):
     canteen_dict = {
-        "CanteenName": canteen_name,
-        "CampusID": campus_id,
-        "LevelNum": 0,
-        "id": str(campus_id) + str(get_campus_by_id(db, campus_id).CanteenNum + 1)
+        "canteen_name": canteen_name,
+        "campus_id": campus_id,
+        "level_num": 0,
+        "id": str(campus_id) + str(get_campus_by_id(db, campus_id).canteen_num + 1)
     }
-    add_campus_canteen_num(db, campus_id)
+    add_campus_canteen_num(db, int(str(campus_id) + str(get_campus_by_id(db, campus_id).canteen_num + 1)))
     canteen = Canteens(**canteen_dict)
     db.add(canteen)
     db.commit()
@@ -61,7 +63,7 @@ def add_canteen(db: Session, canteen_name: str, campus_id: int):
 
 # 可验证餐厅名
 def get_canteen_by_name(db: Session, name: str):
-    return db.query(Canteens).filter(Canteens.CanteenName == name).first()
+    return db.query(Canteens).filter(Canteens.canteen_name == name).first()
 
 
 def add_level(db: Session, canteen_id: str, level: int):
@@ -72,10 +74,10 @@ def add_level(db: Session, canteen_id: str, level: int):
         level = -level
     level_dict = {
         "id": canteen_id + a + str(level),
-        "WindowNum": 0
+        "window_num": 0
     }
     canteen = db.query(Canteens).filter(Canteens.id == canteen_id).first()
-    canteen.LevelNum += 1
+    canteen.level_num += 1
     level_x = Levels(**level_dict)
     db.add(level_x)
     db.commit()
@@ -86,9 +88,9 @@ def add_level(db: Session, canteen_id: str, level: int):
 # level_id 参数来源 add_level
 def add_window(db: Session, name: str, level_id: str, window: int):
     window_dict = {
-        "WindowName": name,
+        "window_name": name,
         "id": level_id + str(window),
-        "DishNum": 0
+        "dish_num": 0
     }
     window_x = Windows(**window_dict)
     db.add(window_x)
@@ -102,31 +104,30 @@ def get_window(db: Session, canteen_id: str, level: int, window: int):
 
 
 def get_canteen(db: Session, canteen_name: str):
-    return db.query(Canteens).filter(Canteens.CanteenName == canteen_name).first()
+    return db.query(Canteens).filter(Canteens.canteen_name == canteen_name).first()
 
 
 # window_id 参数来源 add_window或get_window
 def make_dish_id(db: Session, window_id: str):
     a = db.query(Windows).filter(Windows.id == window_id).first()
-    a.DishNum += 1
-    return window_id + str(a.DishNum)
+    a.dish_num += 1
+    return window_id + str(a.dish_num)
 
 
 # dish_id参数来源 make_dish_id
-def add_dish(db: Session, manager_id: int,
-             name: str, morning: bool, noon: bool, night: bool, canteen_id: str, muslim: bool, photos: str,
-             spare_photos: str, dish_id: str):
+def add_dish(db: Session, dish_message: DishMessage):
     dish_dict = {
-        "DishName": name,
-        "morning": morning,
-        "noon": noon,
-        "night": night,
-        "CanteenID": canteen_id,
-        "Muslim": muslim,
-        "photos": photos,
-        "SparePhotos": spare_photos,
-        "manager": manager_id,
-        "id": dish_id
+        "dish_name": dish_message.name,
+        "morning": dish_message.morning,
+        "noon": dish_message.noon,
+        "night": dish_message.night,
+        "canteen_id": dish_message.canteen_id,
+        "muslim": dish_message.muslim,
+        "photos": dish_message.photos,
+        "spare_photos": dish_message.spare_photos,
+        "manager": dish_message.manager_id,
+        "id": dish_message.dish_id
+
     }
     dish = Dishes(**dish_dict)
     db.add(dish)
