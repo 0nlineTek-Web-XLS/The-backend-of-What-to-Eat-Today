@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from apps import background, models
 from apps.database import engine
@@ -15,6 +16,7 @@ app = FastAPI(
     redoc_url='/redocs',
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
