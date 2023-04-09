@@ -59,7 +59,7 @@ SECRET_KEY = "b81a5447dba59bda81233e037a5f4d6232f0f84a4ca8633c10ce7b57fe916a2b"
 ALGORITHM = "HS256"
 
 # Token过期时间
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 # 依赖token登录的url
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/background/token")
@@ -196,57 +196,90 @@ async def add_new_canteens(canteen_message: CanteenMessage, db: Session = Depend
     new_canteen = get_canteen_by_name(db, canteen_message.canteen_name)
     for level in canteen_message.levels:
         add_level(db, new_canteen.canteen_id, level.level, level.windows_num)
+        level_id = get_level_id(new_canteen.canteen_id, level.level)
         for window in level.windows_information:
-            new_level = get_level(db, level.level)
+            new_level = get_level_by_level_id(db, level_id)
             add_window(db, window.windows_name, new_level.level_id, window.windows)
     return {"message": "success", "detail": "添加成功", "data": {}}
 
 
 # 修改餐厅
-@background.put("/canteens", status_code=200, response_description="edited successfully", summary="修改餐厅")
-async def edit_canteens(canteen_message: CanteenMessage, canteen_id: str = Body(), db: Session = Depends(get_db),
+@background.put("/canteens", status_code=200, response_description="edited successfully", summary="修改餐厅信息")
+async def edit_canteens(canteen_message: EditCanteenMessage, db: Session = Depends(get_db),
                         current_manager: ManagerMessage = Depends(get_current_manager)):
-    canteen = get_canteen_by_canteen_id(db, canteen_id)
+    canteen = get_canteen_by_canteen_id(db, canteen_message.canteen_id)
     if not canteen:
         raise HTTPException(status_code=400, detail="餐厅不存在")
     canteen.canteen_name = canteen_message.canteen_name
     canteen.level_num = canteen_message.level_num
+    db.commit()
+    db.refresh(canteen)
+    new_levels_id = []
+    for level in canteen_message.levels:
+        new_level_id = get_level_id(canteen_message.canteen_id, level.level)
+        new_levels_id.append(new_level_id)
+        old_level = get_level_by_level_id(db, new_level_id)
+        if old_level:
+            old_level.window_num = level.windows_num
+            db.commit()
+            db.refresh(old_level)
+        if not old_level:
+            add_level(db, canteen_message.canteen_id, level.level, level.windows_num)
+        new_windows_id = []
+        old_windows_id = []
+        for window in level.windows_information:
+            if window.windows < 10:
+                num = "0" + str(window.windows)
+            else:
+                num = str(window.windows)
+            new_window_id = new_level_id + num
+            new_windows_id.append(new_window_id)
+            old_window = get_window_by_window_id(db, new_window_id)
+            if old_window:
+                old_window.windows_name = window.windows_name
+                db.commit()
+                db.refresh(old_window)
+            if not old_window:
+                add_window(db, window.windows_name, new_level_id, window.windows)
+        windows = get_windows_by_level_id(db, new_level_id)
+        for window in windows:
+            old_windows_id.append(window.window_id)
+        delete_windows_id = [window_id for window_id in old_windows_id if window_id not in new_windows_id]
+        for delete_window_id in delete_windows_id:
+            delete_window = get_window_by_window_id(db, delete_window_id)
+            dishes = get_dishes_by_window_id(db, delete_window_id)
+            for dish in dishes:
+                db.delete(dish)
+                db.commit()
+            db.delete(delete_window)
+            db.commit()
+    old_levels_id = []
+    levels = get_levels_by_canteen_id(db, canteen_message.canteen_id)
+    for level in levels:
+        old_levels_id.append(level.level_id)
+    delete_levels_id = [delete_level_id for delete_level_id in old_levels_id if delete_level_id not in new_levels_id]
+    for delete_level_id in delete_levels_id:
+        delete_level = get_level_by_level_id(db, delete_level_id)
+        windows = get_windows_by_level_id(db, delete_level_id)
+        for window in windows:
+            dishes = get_dishes_by_window_id(db, window.window_id)
+            for dish in dishes:
+                db.delete(dish)
+                db.commit()
+            db.delete(window)
+            db.commit()
+        db.delete(delete_level)
+        db.commit()
     return {"message": "success", "detail": "修改成功", "data": {}}
 
 
 # 按页获取餐厅信息
-
-
-@background.get("/canteens", status_code=200, response_description="got successfully", summary="获取餐厅信息")
+@background.get("/canteens", status_code=200, response_description="got successfully", summary="按页获取餐厅信息")
 async def get_canteens_by_page(page: int, limit: int, db: Session = Depends(get_db),
                                current_manager: ManagerMessage = Depends(get_current_manager),
                                ):
     canteens = get_canteens(db, page, limit)
-    canteens_information = []
-    levels_information = []
-    for canteen in canteens:
-        levels = get_levels_by_canteen_id(db, canteen.canteen_id)
-        for level in levels:
-            windows = get_windows_by_level_id(db, level.level_id)
-            windows_information = [{
-                "windows_name": window.window_name,
-                "windows_id": window.window_id
-            } for window in windows]
-            level_information = {
-                "level_id": level.level_id,
-                "windows_num": level.window_num,
-                "windows_information": windows_information,
-            }
-            levels_information.append(level_information)
-        canteen_information = {"canteen_name": canteen.canteen_name,
-                               "canteen_id": canteen.canteen_id,
-                               "level_num": canteen.level_num,
-                               "campus": {
-                                   "campus_name": get_campus_by_id(db, canteen.campus_id).campus_name,
-                                   "campus_id": canteen.campus_id,
-                               },
-                               "levels_information": levels_information}
-        canteens_information.append(canteen_information)
+    canteens_information = get_canteens_message(db, canteens)
     return {"message": "success", "detail": "获取成功", "data": {"canteens_information": canteens_information}}
 
 
@@ -292,11 +325,15 @@ async def get_canteens_campus(db: Session = Depends(get_db),
 # 按校区筛选餐厅
 @background.get("/canteens/by-campus", status_code=200, response_description="got successfully",
                 summary="按校区筛选餐厅")
-async def get_canteens_by_campus():
-    return 0
+async def get_canteens_by_campus(page: int, limit: int, campus_id: int, db: Session = Depends(get_db),
+                                 current_manager: ManagerMessage = Depends(get_current_manager)):
+    canteens = get_canteens_filter_campus(db, page, limit, campus_id)
+    canteens_information = get_canteens_message(db, canteens)
+    return {"message": "success", "detail": "获取成功", "data": {"canteens_information": canteens_information}}
 
 
 # 菜品管理接口
+
 # 增加新菜品
 @background.post("/dishes", status_code=201, response_description="added successfully", summary="增加新菜品")
 async def add_new_dish(dish_message: DishMessage,
@@ -308,50 +345,31 @@ async def add_new_dish(dish_message: DishMessage,
 
 
 # 修改菜品
-@background.put("/dishes", status_code=200, response_description="edited successfully", summary="修改菜品")
-async def edit_dish(current_manager: ManagerMessage = Depends(get_current_manager)):
+@background.put("/dishes", status_code=200, response_description="edited successfully", summary="修改菜品信息")
+async def edit_dish(dish_message: EditDishMessage, db: Session = Depends(get_db),
+                    current_manager: ManagerMessage = Depends(get_current_manager)):
+    dish = get_dish_by_dish_id(db, dish_message.dish_id)
+    if not dish:
+        raise HTTPException(status_code=400, detail="菜品不存在")
+    dish.dish_name = dish_message.name
+    dish.morning = dish_message.morning
+    dish.noon = dish_message.noon
+    dish.night = dish_message.night
+    dish.muslim = dish_message.muslim
+    dish.price = dish_message.price
+    dish.size = dish_message.size
+    db.commit()
+    db.refresh(dish)
     return {"message": "success", "detail": "修改成功", "data": {}}
 
 
 # 按页获取菜品信息
-@background.get("/dishes", status_code=200, response_description="got successfully", summary="获取菜品信息")
+@background.get("/dishes", status_code=200, response_description="got successfully", summary="按页获取菜品信息")
 async def get_dishes_by_page(page: int, limit: int, db: Session = Depends(get_db),
                              current_manager: ManagerMessage = Depends(get_current_manager)):
     dishes = get_dishes_page(db, page, limit)
-    dishes_information = []
-    for dish in dishes:
-        window = get_window_by_window_id(db, dish.window_id)
-        level = get_level_by_level_id(db, window.level_id)
-        canteen = get_canteen_by_canteen_id(db, level.canteen_id)
-        campus = get_campus_by_id(db, canteen.campus_id)
-        dish_information = {
-            "dish_name": dish.dish_name,
-            "dish_id": dish.dish_id,
-            "muslim": dish.muslim,
-            "date":
-                {
-                    "morning": dish.morning,
-                    "noon": dish.noon,
-                    "night": dish.night,
-                },
-            "position": {
-                "campus": {
-                    "campus_id": campus.campus_id,
-                    "campus_name": campus.campus_name,
-                },
-                "level": {
-                    "level_id": level.level_id,
-                    "level": level.level
-                },
-                "window":
-                    {
-                        "window_id": window.window_id,
-                        "window_name": window.window_name
-                    }
-            }
-        }
-        dishes_information.append(dish_information)
-    return {"message": "success", "data": {"dishes_information": dishes_information}}
+    dishes_information = get_dishes_message(db, dishes)
+    return {"message": "success", "detail": "获取成功", "data": {"dishes_information": dishes_information}}
 
 
 # 删除菜品
@@ -363,7 +381,42 @@ async def delete_current_dish(dish_id: str, db: Session = Depends(get_db),
         raise HTTPException(status_code=400, detail="菜品不存在")
     db.delete(dish)
     db.commit()
+
     return {"message": "success", "detail": "删除成功", "data": {}}
+
+
+# 按餐厅筛选菜品
+@background.get("/dishes/by-canteen", status_code=200, response_description="got successfully",
+                summary="按餐厅筛选菜品")
+async def get_dishes_by_canteen(canteen_id: str, page: int, limit: int, db: Session = Depends(get_db),
+                                current_manager: ManagerMessage = Depends(get_current_manager)):
+    dishes = get_dishes_filter_canteen(db, page, limit, canteen_id)
+    dishes_information = get_dishes_message(db, dishes)
+    return {"message": "success", "detail": "获取成功", "data": {"dishes_information": dishes_information}}
+
+
+# 按时间筛选菜品
+@background.get("/dishes/by-date", status_code=200, response_description="got successfully",
+                summary="按时间筛选菜品")
+async def get_dishes_by_time(page: int, limit: int, morning: bool, noon: bool, night: bool,
+                             db: Session = Depends(get_db),
+                             current_manager: ManagerMessage = Depends(get_current_manager)):
+    dishes = []
+    if morning:
+        morning_dishes = get_dishes_filter_morning(db, page, limit)
+        for dish in morning_dishes:
+            dishes.append(dish)
+    if noon:
+        noon_dishes = get_dishes_filter_noon(db, page, limit)
+        for dish in noon_dishes:
+            dishes.append(dish)
+    if night:
+        night_dishes = get_dishes_filter_night(db, page, limit)
+        for dish in night_dishes:
+            dishes.append(dish)
+    dishes = list(set(dishes))
+    dishes_information = get_dishes_message(db, dishes)
+    return {"message": "success", "detail": "获取成功", "data": {"dishes_information": dishes_information}}
 
 
 # 获取窗口及其id的序列
@@ -399,7 +452,7 @@ async def get_windows(db: Session = Depends(get_db), current_manager: ManagerMes
 # 上传图片
 @background.post("/photos", status_code=201, response_description="added successfully", summary="上传图片")
 async def add_photo(photo: UploadFile, current_manager: ManagerMessage = Depends(get_current_manager),
-                    db=Depends(get_db)):
+                    ):
     zh = photo.filename.split(".").pop()
     dir_path = "./static/"
     file_name = str(random.randint(10000, 99999) + time.time()) + "." + zh
