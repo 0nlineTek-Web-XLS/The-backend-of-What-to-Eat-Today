@@ -1,0 +1,18 @@
+[project]
+name = "The-backend-of-What-to-Eat-Today"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "0nlineTek Web XLS", email = "xls-0nlinetek@hotmail.com"},
+]
+dependencies = [
+    "fastapi[all]>=0.112.0",
+    "sqlalchemy>=2.0.32",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "Non-oss"}
+
+
+[tool.pdm]
+distribution = false
