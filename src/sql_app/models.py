@@ -1,62 +1,68 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Numeric,LargeBinary, Text, DateTime
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Numeric,LargeBinary, Text, DateTime
+from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import DeclarativeBase 
+from sqlalchemy import types
+import datetime
+
+
 
 class Base(DeclarativeBase):
     pass
 
 class User(Base):   # This class is to be used in the future for user management
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    username = Column(String(20), index=True)
-    sdu_id = Column(String(20), index=True, unique=True)
-    is_admin = Column(Boolean, default=False)
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    username:Mapped[str] = mapped_column(String(20), index=True)
+    sdu_id:Mapped[str] = mapped_column(String(20), index=True, unique=True)
+    is_admin:Mapped[str] = mapped_column(Boolean, default=False)
 
 class Admin(Base):   # The users with privileges to do data modification, whose login should be different from the normal users
     __tablename__ = "admins"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    access_name = Column(String(20), index=True)
-    hashed_password = Column(String(64), index=True)
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    access_name:Mapped[str] = mapped_column(String(20), index=True)
+    hashed_password:Mapped[str] = mapped_column(String(64), index=True)
 
 
 class Comment(Base):   # This class is to be used in the future
     __tablename__ = "comments"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    dish_id = Column(Integer, ForeignKey("dishes.id"))
-    content = Column(Text)
-    vote = Column(Integer)
-    time = Column(DateTime, index=True)
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
+    dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"))
+    content:Mapped[str] = mapped_column(Text)
+    vote:Mapped[int] = mapped_column(Integer)
+    time:Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
 
 
 
 class Canteen(Base):  
     __tablename__ = "canteens"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String(8), index=True, nullable=False, unique=True)
-    description = Column(Text, index=True)
-    image = Column(LargeBinary)
-    campus = Column(String(8), index=True, nullable=False)
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    name:Mapped[str] = mapped_column(String(8), index=True, nullable=False, unique=True)
+    description:Mapped[str] = mapped_column(Text, index=True)
+    image:Mapped[bytes] = mapped_column(LargeBinary)
+    campus:Mapped[str] = mapped_column(String(8), index=True, nullable=False)
 
 
 
 class Dish(Base):
     __tablename__ = "dishes"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    canteen = Column(Integer, ForeignKey("canteens.id"), index=True)
-    floor = Column(Integer, index=True, nullable=False)
-    window = Column(Integer, index=True, nullable=False)
-    name = Column(String(20), index=True, nullable=False)
-    price = Column(Numeric, nullable=True)
-    measure = Column(String(4), default="份")
-    image = Column(LargeBinary)
-    # image = Column(String)
-    average_vote = Column(Numeric, default=2.5, index=True)
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    canteen:Mapped[int] = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
+    floor:Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    window:Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    name:Mapped[str] = mapped_column(String(20), index=True, nullable=False)
+    price:Mapped[float] = mapped_column(Numeric, nullable=True)
+    measure:Mapped[str] = mapped_column(String(4), default="份")
+    image:Mapped[bytes] = mapped_column(LargeBinary)
+    # image = mapped_column(String)
+    average_vote:Mapped[float] = mapped_column(Numeric, default=2.5, index=True)
     
     
     
@@ -64,15 +70,15 @@ class Dish(Base):
 class NewDish(Base):
     __tablename__ = "new_dishes"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    dish_id = Column(Integer, ForeignKey("dishes.id"), index=True)
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"), index=True)
     dish = relationship("Dish")
 
 
 class Carousel(Base):
     __tablename__ = "carousels"
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    canteen = canteen = Column(Integer, ForeignKey("canteens.id"), index=True)
-    image = Column(String)
+    id = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    canteen = canteen = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
+    image = mapped_column(String)
 
