@@ -1,47 +1,27 @@
 from pydantic import BaseModel
-from enum import Enum
-from typing import List
-from dataclasses import dataclass
 
 
-# class Canteen(str, Enum):
-#     xinyuan = "欣园"
-#     yueyuan = "悦园"
-
-
-@dataclass
-class DishItem(BaseModel):
+class DishBase(BaseModel):
     canteen: int
     floor: int
-    measure: str
-    name: str
-    price: float
     window: int
-    average_vote: float
-    image: str = "http://dummyimage.com/400x400"
-
+    name: str
     
-class DishDelItem(BaseModel):
-    name: str
-    canteen: int
-    floor: int
-    window: int
-
-
-class DishPutItem(BaseModel):
-    canteen: int
-    floor: int
+class DishPriced(DishBase):
+    id: int
     measure: str
-    name: str
-    price: float
-    window: int
-    image: str = "http://dummyimage.com/400x400"
+    price: float | None = None
 
+class DishItemPriced(DishPriced, DishBase):
+    pass
+
+class DishItem(DishItemPriced):
+    average_vote: float
+    image: bytes | None = None
 
 class CarouselItem(BaseModel):
     canteen: int = 1
-    image: str = "http://dummyimage.com/400x400"
-    
+    image: bytes
     
 class CommentItem(BaseModel):
     user_id: int = 666666
@@ -50,12 +30,6 @@ class CommentItem(BaseModel):
     vote: int = 3
     time: str = "2024-08-04 12:01:59"
 
-
-class CommentDelItem(BaseModel):
-    user_id: int = 666666
-    dish_id: int = 1
-    content: str
-    time: str = "2024-08-04 12:01:59"
 
 
 # class ItemBase(BaseModel):
