@@ -1,36 +1,33 @@
 from pydantic import BaseModel
 
-
+from datetime import datetime
 class DishBase(BaseModel):
     canteen: int
     floor: int
     window: int
     name: str
     
-class DishPriced(DishBase):
+class DishItemPriced(DishBase):
     id: int
-    measure: str
+    measure: str = '份'
     price: float | None = None
-
-class DishItemPriced(DishPriced, DishBase):
-    pass
 
 class DishItem(DishItemPriced):
     average_vote: float
-    image: bytes | None = None
-
+    image: bytes = b''
+class PricingData(BaseModel):
+    price: float
+    measure: str = '份'
 class CarouselItem(BaseModel):
     canteen: int = 1
-    image: bytes
+    image: bytes = b''
     
 class CommentItem(BaseModel):
     user_id: int = 666666
     dish_id: int = 1
     content: str
     vote: int = 3
-    time: str = "2024-08-04 12:01:59"
-
-
+    time: datetime = datetime.now()
 
 # class ItemBase(BaseModel):
 #     title: str
