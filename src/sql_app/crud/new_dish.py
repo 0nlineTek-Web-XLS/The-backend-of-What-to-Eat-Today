@@ -11,15 +11,9 @@ def delete(db: Session, id: int):
     db.query(Dish).filter(Dish.id == id).delete()
     db.commit()
 
-def add(db: Session, dish: DishItem):
-    db_dish = Dish(canteen=dish.canteen, 
-                          floor=dish.floor,
-                          window=dish.window,
-                          name=dish.name,
-                          price=dish.price,
-                          measure=dish.measure,
-                          image=dish.image)
-    db.add(db_dish)
-    db.commit()
-    db.refresh(db_dish)
-    return db_dish
+def add(db: Session, id: int):
+
+    db_dish = db.query(Dish).filter(Dish.id == id).first()
+    if db_dish:
+        return db_dish
+
