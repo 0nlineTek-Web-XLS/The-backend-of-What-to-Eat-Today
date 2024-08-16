@@ -72,7 +72,7 @@ class NewDish(Base):
     
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"), index=True)
-    dish = relationship("Dish")
+    # dish = relationship("Dish")
 
 
 class Carousel(Base):

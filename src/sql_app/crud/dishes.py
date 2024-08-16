@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy.orm import Session
 
 from ..models import Dish
@@ -15,7 +16,7 @@ def get_all_by_canteen(db: Session, canteen: int, floor: int = 0, window: int = 
     return res.offset(skip).limit(limit).all()
 
 
-def add(db: Session, dish: DishItemPriced):
+def add(db: Session, dish: DishItemPriced) -> Dish:
     db_dish = Dish(canteen=dish.canteen, 
                           floor=dish.floor,
                           window=dish.window,
@@ -28,15 +29,15 @@ def add(db: Session, dish: DishItemPriced):
     db.refresh(db_dish)
     return db_dish
 
-def get_by_id(db: Session, dish_id: int):
+def get_by_id(db: Session, dish_id: int) -> Dish | None:
     return db.query(Dish).filter(Dish.id == dish_id).first()
 
-def delete(db: Session, dish_id: int):
+def delete(db: Session, dish_id: int) -> dict[str, str]:
     db.query(Dish).filter(Dish.id == dish_id).delete()
     db.commit()
     return {"detail": "Delete Success"}
 
-def update(db: Session, dish: DishItemPriced):
+def update(db: Session, dish: DishItemPriced) -> Dish:
     db_dish = db.query(Dish).filter(Dish.id == dish.id).first()
     if db_dish is None:
         raise Exception("No such dish")
@@ -46,7 +47,7 @@ def update(db: Session, dish: DishItemPriced):
     db.commit()
     return db_dish
 
-def update_price(db: Session, dish_id: int, pricing: PricingData):
+def update_price(db: Session, dish_id: int, pricing: PricingData) -> Dish:
     db_dish = db.query(Dish).filter(Dish.id == dish_id).first()
     if db_dish is None:
         raise Exception("No such dish")
@@ -55,7 +56,7 @@ def update_price(db: Session, dish_id: int, pricing: PricingData):
     db.commit()
     return db_dish
 
-def update_image(db: Session, dish_id: int, image: bytes):
+def update_image(db: Session, dish_id: int, image: bytes) -> Dish:
     db_dish = db.query(Dish).filter(Dish.id == dish_id).first()
     if db_dish is None:
         raise Exception("No such dish")
@@ -63,6 +64,6 @@ def update_image(db: Session, dish_id: int, image: bytes):
     db.commit()
     return db_dish
 
-def search(db: Session, name: str, skip: int = 0, limit: int = 200):
+def search(db: Session, name: str, skip: int = 0, limit: int = 200) -> List[Dish]:
     return db.query(Dish).filter(Dish.name.like(f"%{name}%")).offset(skip).limit(limit).all()
 

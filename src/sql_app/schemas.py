@@ -8,11 +8,12 @@ class DishBase(BaseModel):
     name: str
     
 class DishItemPriced(DishBase):
-    id: int
+    # id: int
     measure: str = '份'
     price: float | None = None
 
 class DishItem(DishItemPriced):
+    id: int
     average_vote: float
     image: bytes = b''
 class PricingData(BaseModel):
