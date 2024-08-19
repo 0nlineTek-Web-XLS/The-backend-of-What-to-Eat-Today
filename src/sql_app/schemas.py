@@ -2,63 +2,139 @@ from pydantic import BaseModel
 
 from datetime import datetime
 class DishBase(BaseModel):
+    """
+    DishBase is the base class for a dish item.
+
+    All dish items should belong to a window in a floor in a canteen.
+
+    Attributes:
     canteen: int
     floor: int
     window: int
     name: str
+    measure: str = '份'
+    price: float | None = None
     
-class DishItemPriced(DishBase):
-    # id: int
+    """
+    canteen: int
+    floor: int
+    window: int
+    name: str
     measure: str = '份'
     price: float | None = None
 
-class DishItem(DishItemPriced):
+class DishItemUpdate(DishBase):
+    """
+    DishItemStored is the class for a dish item stored in the database.
+
+    Attributes:
     id: int
+    canteen: int
+    floor: int
+    window: int
+    name: str
+    measure: str = '份'
+    price: float | None = None
+    """
+    id: int
+class DishItem(DishItemUpdate):
+    """
+    DishItem is the class for a dish item returned to the client. It includes all the attributes of DishItemStored and some additional attributes.
+
+    Attributes:
+    id: int
+    canteen: int
+    floor: int
+    window: int
+    name: str
+    measure: str = '份'
+    price: float | None = None
+    average_vote: float
+    image: bytes = b''
+    """
     average_vote: float
     image: bytes = b''
 class PricingData(BaseModel):
+    """
+    PricingData is the class for the pricing data of a dish item. It is used to update the price of a dish item.
+
+    Attributes:
     price: float
     measure: str = '份'
+
+    For example, if you want to update the price of a dish item with id 1 to 10.5 yuan per 份, you can use PricingData(id=1, price=10.5).
+    """
+    price: float
+    measure: str = '份'
+
 class CarouselItem(BaseModel):
+    """
+    CarouselItem is the class for a carousel item.
+
+    Attributes:
+    canteen: int
+    image: bytes = b''
+    """
     canteen: int = 1
     image: bytes = b''
     
 class CommentItem(BaseModel):
-    user_id: int = 666666
-    dish_id: int = 1
+    """
+    CommentItem is the class for a comment item.
+    """
+    user_id: int 
+    dish_id: int 
     content: str
     vote: int = 3
     time: datetime = datetime.now()
 
-# class ItemBase(BaseModel):
-#     title: str
-#     description: str | None = None
+class CommentStored(CommentItem):
+    """
+    CommentStored is the class for a comment item stored in the database.
+    """
+    id: int
 
+class CanteenBase(BaseModel):
+    """
+    CanteenBase is the base class for a canteen item.
 
-# class ItemCreate(ItemBase):
-#     pass
+    Attributes:
+    name: str
+    description: str
+    image: bytes = b''
+    campus: str
+    """
+    name: str
+    description: str
+    image: bytes = b''
+    campus: str
 
+class CanteenItem(CanteenBase):
+    """
+    CanteenItemStored is the class for a canteen item stored in the database.
 
-# class Item(ItemBase):
-#     id: int
-#     owner_id: int
+    Attributes:
+    id: int
+    name: str
+    description: str
+    image: bytes = b''
+    campus: str
+    """
+    id: int
 
-#     class Config:
-#         orm_mode = True
+class AdvancedSearch(BaseModel):
+    """
+    AdvancedSearchItem is the class for the advanced search item.
 
-
-# class UserBase(BaseModel):
-#     email: str
-
-
-# class UserCreate(UserBase):
-#     password: str
-
-
-# class User(UserBase):
-#     id: int
-#     is_active: bool
-#     items: list[Item] = []
-
-#     class Config:
-#         orm_mode = True
+    Attributes:
+    canteen: int | None = None
+    floor: int | None = None
+    window: int | None = None
+    name: str | None = None
+    """
+    canteen: list[int] = []
+    floor: list[int] = []
+    window: list[int] = []
+    name: str = ''
+    skip: int = 0
+    limit: int = 200

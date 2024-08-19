@@ -2,7 +2,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from ..models import Dish
-from ..schemas import DishBase, DishItem, DishItemPriced, PricingData
+from ..schemas import DishBase, DishItemUpdate, PricingData, AdvancedSearch
 
 
 def get_all_by_canteen(db: Session, canteen: int, floor: int = 0, window: int = 0, name: str = '' , skip: int = 0, limit: int = 200) -> list[Dish]:
@@ -16,7 +16,7 @@ def get_all_by_canteen(db: Session, canteen: int, floor: int = 0, window: int = 
     return res.offset(skip).limit(limit).all()
 
 
-def add(db: Session, dish: DishItemPriced) -> Dish:
+def add(db: Session, dish: DishBase) -> Dish:
     db_dish = Dish(canteen=dish.canteen, 
                           floor=dish.floor,
                           window=dish.window,
@@ -37,16 +37,6 @@ def delete(db: Session, dish_id: int) -> dict[str, str]:
     db.commit()
     return {"detail": "Delete Success"}
 
-def update(db: Session, dish: DishItemPriced) -> Dish:
-    db_dish = db.query(Dish).filter(Dish.id == dish.id).first()
-    if db_dish is None:
-        raise Exception("No such dish")
-    if dish.price is not None:
-        db_dish.price = dish.price
-    db_dish.measure = dish.measure
-    db.commit()
-    return db_dish
-
 def update_price(db: Session, dish_id: int, pricing: PricingData) -> Dish:
     db_dish = db.query(Dish).filter(Dish.id == dish_id).first()
     if db_dish is None:
@@ -54,6 +44,20 @@ def update_price(db: Session, dish_id: int, pricing: PricingData) -> Dish:
     db_dish.price = pricing.price
     db_dish.measure = pricing.measure
     db.commit()
+    return db_dish
+
+def update(db: Session, data: DishItemUpdate) -> Dish:
+    db_dish: Dish | None = db.query(Dish).filter(Dish.id == data.id).first() if data.id else None
+    if db_dish is None:
+        raise Exception("No such dish")
+    db_dish.canteen = data.canteen
+    db_dish.floor = data.floor
+    db_dish.window = data.window
+    db_dish.name = data.name
+    db_dish.price = data.price if data.price else db_dish.price
+    db_dish.measure = data.measure
+    db.commit()
+    db.refresh(db_dish)
     return db_dish
 
 def update_image(db: Session, dish_id: int, image: bytes) -> Dish:
@@ -65,5 +69,19 @@ def update_image(db: Session, dish_id: int, image: bytes) -> Dish:
     return db_dish
 
 def search(db: Session, name: str, skip: int = 0, limit: int = 200) -> List[Dish]:
-    return db.query(Dish).filter(Dish.name.like(f"%{name}%")).offset(skip).limit(limit).all()
+    return db.query(Dish).filter(Dish.name.like(
+        f"%{name}%"
+    )).offset(skip).limit(limit).all()
 
+def advanced_search(db: Session, data: AdvancedSearch):
+    res = db.query(Dish)
+    if data.canteen:
+        # if not empty list, then filter if id in the list
+        res = res.filter(Dish.canteen.in_(data.canteen))
+    if data.floor:
+        res = res.filter(Dish.floor.in_(data.floor))
+    if data.window:
+        res = res.filter(Dish.window.in_(data.window))
+    if data.name:
+        res = res.filter(Dish.name.like(f"%{data.name}%"))
+    return res.offset(data.skip).limit(data.limit).all()

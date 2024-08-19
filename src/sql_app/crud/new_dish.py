@@ -10,9 +10,11 @@ def delete(db: Session, id: int):
     db.query(Dish).filter(Dish.id == id).delete()
     db.commit()
 
-def add(db: Session, id: int):
+def add(db: Session, id: int) -> Dish | None:
     db_dish = db.query(Dish).filter(Dish.id == id).first()
     if db_dish:
-        db.add(NewDish(db_dish.id))
+        db.add(NewDish(
+            dish_id=id
+        ))
         return db_dish
 

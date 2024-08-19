@@ -1,4 +1,3 @@
-from typing import Any
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Numeric,LargeBinary, Text, DateTime
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -46,6 +45,8 @@ class Canteen(Base):
     description:Mapped[str] = mapped_column(Text, index=True)
     image:Mapped[bytes] = mapped_column(LargeBinary)
     campus:Mapped[str] = mapped_column(String(8), index=True, nullable=False)
+    dishes: Mapped[list["Dish"]] = relationship(back_populates="canteen_obj")
+    carousels: Mapped[list["Carousel"]] = relationship(back_populates="canteen_obj")
 
 
 
@@ -61,9 +62,8 @@ class Dish(Base):
     measure:Mapped[str] = mapped_column(String(4), default="份")
     image:Mapped[bytes] = mapped_column(LargeBinary, default=b'')
     average_vote:Mapped[float] = mapped_column(Numeric, default=2.5, index=True)
-    
-    
-    
+    canteen_obj:Mapped['Canteen'] = relationship(back_populates="dishes")
+    new_dishes: Mapped[list["NewDish"]] = relationship("NewDish", back_populates="dish")
 
 class NewDish(Base):
     __tablename__ = "new_dishes"
@@ -79,4 +79,5 @@ class Carousel(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     canteen:Mapped[int] = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
     image:Mapped[bytes] = mapped_column(LargeBinary)
+    canteen_obj:Mapped['Canteen'] = relationship(back_populates="carousels")
 
