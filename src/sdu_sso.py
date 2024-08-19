@@ -1,4 +1,3 @@
-# 导入requests库
 import httpx
 import xml.dom.minidom
 
@@ -22,7 +21,7 @@ def login(username, password, baseURL="https://pass.sdu.edu.cn/") -> str:
 
     return sTicket
 
-def get_user_name_and_id(sTicket, baseURL="https://pass.sdu.edu.cn/"):
+def get_user_name_and_id(sTicket, baseURL="https://pass.sdu.edu.cn/") -> tuple[str, str]:
     user_data = xml.dom.minidom.parseString(httpx.get(
         f"{baseURL}cas/serviceValidate",
         params={

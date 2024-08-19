@@ -10,10 +10,19 @@ class Base(DeclarativeBase):
     pass
 
 class User(Base):   # This class is to be used in the future for user management
+    """
+    This class is to be used in the future for user management
+
+    Attributes:
+    id: The id of the user
+    username: The username of the user
+    sdu_id: The sdu_id of the user
+    is_admin: The boolean value of whether the user is an admin
+    """
     __tablename__ = "users"
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     username:Mapped[str] = mapped_column(String(20), index=True)
-    sdu_id:Mapped[str] = mapped_column(String(20), index=True, unique=True)
+    sdu_id:Mapped[str | None] = mapped_column(String(20), index=True, unique=True, nullable=True)
     is_admin:Mapped[str] = mapped_column(Boolean, default=False)
 
 class Admin(Base):   # The users with privileges to do data modification, whose login should be different from the normal users

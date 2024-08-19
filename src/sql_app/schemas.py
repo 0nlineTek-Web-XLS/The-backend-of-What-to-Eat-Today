@@ -138,3 +138,20 @@ class AdvancedSearch(BaseModel):
     name: str = ''
     skip: int = 0
     limit: int = 200
+
+
+class UserData(BaseModel):
+    id: int
+    username: str
+    sdu_id: str | None
+    is_admin: bool
+
+
+class AdminCreate(BaseModel):
+    access_name: str
+    password: str
+    user_id: int
+    
+class AdminData(AdminCreate):
+    id: int
+    

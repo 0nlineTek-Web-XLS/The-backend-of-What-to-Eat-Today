@@ -15,5 +15,5 @@ def post_comment(db: Session, comment: CommentItem):
     db.refresh(db_comment)
     return db_comment
 
-def get_comment(db: Session, canteen: int):
-    return db.query(Comment).filter(Comment.canteen == canteen).all()
+def get_comment(db: Session, dish: int):
+    return db.query(Comment).filter(Comment.dish_id == dish).all()
