@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 import jwt
 import sdu_sso
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os
 
 router = APIRouter()
@@ -46,9 +46,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db = Depends(get_db)) 
     return db_user
 
 def create_token(user_id: int, is_admin: bool, time_expire = timedelta(minutes=15)) -> str:
-    payload = {"sub": user_id, "is_admin": is_admin, "exp": time_expire}
+    payload = {"sub": user_id, "is_admin": is_admin, "exp": datetime.now() + time_expire}
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-def authenticate_user(username: str, password: str, db= Depends(get_db)):
+
+def authenticate_user(username: str, password: str, db):
     # check if username exists
     user_in_db = user.get_user_by_sdu_id(db, username)
     if user_in_db is None:
@@ -86,8 +87,8 @@ def read_users_me(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 @router.post("/token")
-def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    return authenticate_user(form_data.username, form_data.password)
+def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db = Depends(get_db)):
+    return authenticate_user(form_data.username, form_data.password, db)
 
 @router.get("/users/{user_id}", response_model=UserData)
 def read_user(user_id: int, db = Depends(get_db), current_user: User = Depends(get_current_user)) -> User:
