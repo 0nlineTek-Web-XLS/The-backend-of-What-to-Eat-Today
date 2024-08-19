@@ -15,7 +15,7 @@ from typing import List
 import dish
 import pandas as pd
 import uvicorn
-
+import comments
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
 app = FastAPI()
@@ -26,7 +26,7 @@ app.include_router(canteen.router, prefix="/canteen", tags=["canteen"])
 app.include_router(new.router, prefix="/new", tags=["new"])
 app.include_router(carousel.router, prefix="/carousel", tags=["carousel"])
 app.include_router(users.router, prefix="/users", tags=["users"])
-
+app.include_router(comments.router, prefix="/comments", tags=["comments"])
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app", host="127.0.0.1", port=8000, reload=True)
