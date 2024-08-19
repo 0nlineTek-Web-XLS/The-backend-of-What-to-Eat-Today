@@ -1,11 +1,10 @@
+from typing import Any
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Numeric,LargeBinary, Text, DateTime
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import DeclarativeBase 
-from sqlalchemy import types
+from sqlalchemy.orm import DeclarativeBase
 import datetime
-
 
 
 class Base(DeclarativeBase):
@@ -58,10 +57,9 @@ class Dish(Base):
     floor:Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     window:Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     name:Mapped[str] = mapped_column(String(20), index=True, nullable=False)
-    price:Mapped[float] = mapped_column(Numeric, nullable=True)
+    price:Mapped[float | None] = mapped_column(Numeric, nullable=True)
     measure:Mapped[str] = mapped_column(String(4), default="份")
-    image:Mapped[bytes] = mapped_column(LargeBinary)
-    # image = mapped_column(String)
+    image:Mapped[bytes] = mapped_column(LargeBinary, default=b'')
     average_vote:Mapped[float] = mapped_column(Numeric, default=2.5, index=True)
     
     
@@ -72,13 +70,13 @@ class NewDish(Base):
     
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"), index=True)
-    # dish = relationship("Dish")
+    dish = relationship("Dish", back_populates="new_dishes")
 
 
 class Carousel(Base):
     __tablename__ = "carousels"
     
-    id = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    canteen = canteen = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
-    image = mapped_column(String)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    canteen:Mapped[int] = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
+    image:Mapped[bytes] = mapped_column(LargeBinary)
 
