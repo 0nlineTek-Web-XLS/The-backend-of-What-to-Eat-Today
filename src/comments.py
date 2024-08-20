@@ -26,7 +26,7 @@ def delete_comment(comment_id: int, db: Session = Depends(get_db), user: User = 
         raise HTTPException(status_code=404, detail="Comment not found")
     if not user.is_admin and user.id != db_comment.user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return delete_comment(db=db, comment_id=comment_id)
+    return delete(db=db, comment_id=comment_id)
 
 @router.put("/{comment_id}")
 def update_comment(comment_id: int, comment: CommentItem, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
@@ -35,7 +35,7 @@ def update_comment(comment_id: int, comment: CommentItem, db: Session = Depends(
         raise HTTPException(status_code=404, detail="Comment not found")
     if not user.is_admin and user.id != db_comment.user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return update_comment(db=db, comment_id=comment_id, comment=comment)
+    return update(db=db, comment_id=comment_id, comment=comment)
 
 @router.get("/dish/{dish_id}")
 def read_comment_by_dish(dish_id: int, db: Session = Depends(get_db)):

@@ -21,12 +21,12 @@ def get_comment(db: Session, comment_id: int):
 def get_comment_by_dish(db: Session, dish: int):
     return db.query(Comment).filter(Comment.dish_id == dish).all()
 
-def delete_comment(db: Session, comment_id: int):
+def delete(db: Session, comment_id: int):
     db.query(Comment).filter(Comment.id == comment_id).delete()
     db.commit()
     return True
 
-def update_comment(db: Session, comment_id: int, comment: CommentItem):
+def update(db: Session, comment_id: int, comment: CommentItem):
     db_comment: Comment | None = db.query(Comment).filter(Comment.id == comment_id).first()
     assert db_comment, "No such comment"
     db_comment.content = comment.content
