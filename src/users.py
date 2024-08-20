@@ -55,9 +55,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) ->
 
 
 def check_admin_privilege(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
-    user = get_current_user(token, db)
-    if not user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    user: User = get_current_user(token, db)
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
@@ -86,9 +84,9 @@ def authenticate_user(username: str, password: str, db):
                     sdu_sso.login(username, password)
                 )
             except:
-                raise HTTPException(
+                raise HTTPException(  # pylint: disable=raise-missing-from
                     status_code=401, detail="Invalid credentials"
-                )  # pylint: disable=raise-missing-from
+                )  
             user_in_db = user.register_user(db, name, sdu_id)
         else:
             # check if password is correct
@@ -102,9 +100,9 @@ def authenticate_user(username: str, password: str, db):
             sTicket = sdu_sso.login(username, password)
             name, sdu_id = sdu_sso.get_user_name_and_id(sTicket)
         except:
-            raise HTTPException(
+            raise HTTPException(    # pylint: disable=raise-missing-from
                 status_code=401, detail="Invalid credentials"
-            )  # pylint: disable=raise-missing-from
+            )  
         return create_token(user_in_db.id, False)
 
 
