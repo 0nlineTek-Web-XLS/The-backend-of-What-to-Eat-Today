@@ -2,10 +2,12 @@ from sql_app.crud.dishes import *
 from sql_app.models import Dish
 from sql_app.schemas import DishItem, DishBase, PricingData, DishItemUpdate, AdvancedSearch
 from sql_app import get_db
+from sql_app.crud.canteen import get_all
 from fastapi import APIRouter, Depends, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 import random
 import pandas as pd
+from users import check_admin_privilege
 
 router = APIRouter()
 
@@ -30,25 +32,28 @@ def get_dish_by_window(
 
 
 @router.post("", response_model=DishBase)
-def add_dish(dish: DishBase, db: Session = Depends(get_db)) -> Dish:
+def add_dish(dish: DishBase, 
+             db: Session = Depends(get_db),
+             privileged = Depends(check_admin_privilege),
+             ) -> Dish:
     return add(db, dish)
 
 
 @router.put("", response_model=DishItem)
-def update_dish(dish: DishItemUpdate, db: Session = Depends(get_db)) -> Dish:
+def update_dish(dish: DishItemUpdate, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)) -> Dish:
     return update(db, dish)
 
 
 @router.patch("/{dish_id}/pricing", response_model=DishItem)
 def update_dish_pricing(
-    dish_id: int, pricing: PricingData, db: Session = Depends(get_db)
+    dish_id: int, pricing: PricingData, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
 ) -> Dish:
     return update_price(db, dish_id, pricing)
 
 
 @router.patch("/{dish_id}/image", response_model=DishItem)
 def update_dish_image(
-    dish_id: int, image: UploadFile, db: Session = Depends(get_db)
+    dish_id: int, image: UploadFile, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
 ) -> Dish:
     # check if valid image
     try:
@@ -59,7 +64,8 @@ def update_dish_image(
 
 
 @router.delete("", deprecated=True)
-def delete_dish(dish: DishBase, db: Session = Depends(get_db)) -> dict[str, str]:
+def delete_dish(dish: DishBase, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
+                ) -> dict[str, str]:
     """
     It is a stupid API which filters the dish by name and canteen and floor and other info but JUST NO ID
 
@@ -77,7 +83,8 @@ def delete_dish(dish: DishBase, db: Session = Depends(get_db)) -> dict[str, str]
 
 
 @router.delete("/{dish_id}")
-def delete_dish_by_id(dish_id: int, db: Session = Depends(get_db)) -> dict[str, str]:
+def delete_dish_by_id(dish_id: int, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
+                      ) -> dict[str, str]:
     try:
         return delete(db, dish_id)
     except:
@@ -110,34 +117,40 @@ def search_dish_by_name_alike(
 def advanced_search_dish(
     data: AdvancedSearch, db: Session = Depends(get_db)
 ) -> list[Dish]:
-    return advanced_search(db, dish)
+    return advanced_search(db, data)
 
 
-@router.get("/excel/sample")
-def get_excel_sample() -> FileResponse:
+@router.get("/excel/sample", response_class=FileResponse)
+def get_excel_sample(
+    privileged = Depends(check_admin_privilege)
+) -> FileResponse:
     return FileResponse("sample.xlsx")
 
 
-@router.post("/excel")
-def upload_excel(file: UploadFile, db: Session = Depends(get_db)):
-    if file.filename[-4:] == "xlsx":
-        data = pd.read_excel(file.file)
-        data_dict = data.to_dict(orient="records")
-    elif file.filename[-3:] == "csv":
-        data = pd.read_csv(file.file, encoding="gbk")
-        data_dict = data.to_dict(orient="records")
+@router.post("/excel", response_model=list[DishItem])
+def upload_excel(file: UploadFile, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
+                 ) -> list[Dish]:
+    try:
+        df = pd.read_excel(file.file)
+    except:
+        raise HTTPException(400, detail="Invalid Excel File")
+    data_dict = df.to_dict("records")
+    canteen_dict = {i.name: i.id for i in get_all(db)}
+    # print(canteen_dict)
+    ret:list[Dish] = []
     for dicts in data_dict:
-        # for key, value in dicts.items():
-        add_dish(
-            DishBase(
-                canteen=dicts["餐厅"],
+        dish_item: DishBase=DishBase(
+                canteen=canteen_dict[dicts["食堂"]],
                 floor=dicts["楼层"],
                 window=dicts["窗口"],
                 name=dicts["菜品"],
                 measure=dicts["单位"],
                 price=dicts["价格"],
-            ),
+            )
+        
+        ret.append(add_dish(
+            dish_item,
             db,
-        )
+        ))
 
-    return {"detail": "Add Success"}
+    return ret
