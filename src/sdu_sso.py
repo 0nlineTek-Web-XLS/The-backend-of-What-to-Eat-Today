@@ -10,15 +10,13 @@ def login(username, password, baseURL="https://pass.sdu.edu.cn/") -> str:
     ).text
 
     # 检查ticket是否以TGT开头
-    if not ticket.startswith("TGT"):
-        raise Exception("ticket should start with TGT. Check your username and password.")
+    assert ticket.startswith("TGT"), "ticket should start with TGT. Check your username and password."
 
     # 发送第二个请求，获取sTicket
     sTicket = httpx.post(f"{baseURL}cas/restlet/tickets/{ticket}",content="service=https://service.sdu.edu.cn/tp_up/view?m=up", headers={"Content-Type": "text/plain"}).text
 
     # 检查sTicket是否以ST开头
-    if not sTicket.startswith("ST"):
-        raise Exception("sTicket should start with ST")
+    assert sTicket.startswith("ST"), "sTicket should start with ST"
 
     return sTicket
 
