@@ -150,8 +150,9 @@ class UserData(BaseModel):
 class AdminCreate(BaseModel):
     access_name: str
     password: str
-    user_id: int
+    user_id: int | None = None
     
-class AdminData(AdminCreate):
+class AdminData(BaseModel):
     id: int
-    
+    access_name: str
+    user_id: int
