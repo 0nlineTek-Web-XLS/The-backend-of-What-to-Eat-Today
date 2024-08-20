@@ -26,8 +26,7 @@ def delete(db: Session, canteen_id: int) -> dict[str, str]:
 
 def update(db: Session, data: CanteenItem) -> dict[str, str]:
     db_canteen: Canteen | None = db.query(Canteen).filter(Canteen.id == data.id).first() if data.id else None
-    if db_canteen is None:
-        raise Exception("No such canteen")
+    assert db_canteen, "No such canteen"
     db_canteen.name = data.name
     db_canteen.description = data.description
     db_canteen.image = data.image if data.image else db_canteen.image

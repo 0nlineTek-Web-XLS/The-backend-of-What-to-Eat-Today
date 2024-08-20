@@ -27,9 +27,8 @@ def delete_comment(db: Session, comment_id: int):
     return True
 
 def update_comment(db: Session, comment_id: int, comment: CommentItem):
-    db_comment = db.query(Comment).filter(Comment.id == comment_id).first()
-    if db_comment is None:
-        raise Exception('No such comment')
+    db_comment: Comment | None = db.query(Comment).filter(Comment.id == comment_id).first()
+    assert db_comment, "No such comment"
     db_comment.content = comment.content
     db_comment.dish_id = comment.dish_id
     db.commit()

@@ -38,9 +38,8 @@ def delete(db: Session, dish_id: int) -> dict[str, str]:
     return {"detail": "Delete Success"}
 
 def update_price(db: Session, dish_id: int, pricing: PricingData) -> Dish:
-    db_dish = db.query(Dish).filter(Dish.id == dish_id).first()
-    if db_dish is None:
-        raise Exception("No such dish")
+    db_dish: Dish | None = db.query(Dish).filter(Dish.id == dish_id).first()
+    assert db_dish, "No such dish"
     db_dish.price = pricing.price
     db_dish.measure = pricing.measure
     db.commit()
@@ -48,8 +47,7 @@ def update_price(db: Session, dish_id: int, pricing: PricingData) -> Dish:
 
 def update(db: Session, data: DishItemUpdate) -> Dish:
     db_dish: Dish | None = db.query(Dish).filter(Dish.id == data.id).first() if data.id else None
-    if db_dish is None:
-        raise Exception("No such dish")
+    assert db_dish, "No such dish"
     db_dish.canteen = data.canteen
     db_dish.floor = data.floor
     db_dish.window = data.window
@@ -61,9 +59,8 @@ def update(db: Session, data: DishItemUpdate) -> Dish:
     return db_dish
 
 def update_image(db: Session, dish_id: int, image: bytes) -> Dish:
-    db_dish = db.query(Dish).filter(Dish.id == dish_id).first()
-    if db_dish is None:
-        raise Exception("No such dish")
+    db_dish: Dish | None = db.query(Dish).filter(Dish.id == dish_id).first()
+    assert db_dish, "No such dish"
     db_dish.image = image
     db.commit()
     return db_dish
