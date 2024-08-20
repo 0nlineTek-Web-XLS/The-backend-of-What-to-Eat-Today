@@ -18,6 +18,6 @@ def add_new_dish(id: int, db = Depends(get_db)) -> new_dish.Dish | None:
 def get_new_dish(canteen: int, db = Depends(get_db)) -> List[Dish]:
     return new_dish.get(db, canteen)
 
-@router.delete('/{id}')
-def delete_new_dish(id:int, db = Depends(get_db)) -> None:
-    return new_dish.delete(db,  id= id)
+@router.delete('/{dish_id}')
+def delete_new_dish(dish_id:int, db = Depends(get_db)) -> None:
+    return new_dish.delete(db,  dish_id=dish_id)
