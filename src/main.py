@@ -8,7 +8,7 @@ import canteen
 import new
 import carousel
 from sql_app import crud, models, schemas
-from sql_app.database import SessionLocal, engine
+from fastapi.middleware.cors import CORSMiddleware
 from random import choice
 from typing import List
 # from fastapi.staticfiles import StaticFiles
@@ -19,6 +19,21 @@ import comments
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
 app = FastAPI()
+
+# add CORS
+
+
+origins = [
+    '*'
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # app.mount("/pictures", StaticFiles(directory="pictures"), name="pictures")
 app.include_router(dish.router, prefix="/dish", tags=["dish"])
