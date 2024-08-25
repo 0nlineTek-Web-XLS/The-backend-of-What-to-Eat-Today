@@ -58,7 +58,7 @@ def update(db: Session, data: DishItemUpdate) -> Dish:
     db.refresh(db_dish)
     return db_dish
 
-def update_image(db: Session, dish_id: int, image: bytes) -> Dish:
+def update_image(db: Session, dish_id: int, image: str) -> Dish:
     db_dish: Dish | None = db.query(Dish).filter(Dish.id == dish_id).first()
     assert db_dish, "No such dish"
     db_dish.image = image
