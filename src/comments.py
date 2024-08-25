@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sql_app.crud.comment import *
+from sql_app.crud.dishes import get_by_id as check_dish
 from users import get_current_user, User
 from sql_app import get_db
 router = APIRouter()
@@ -13,10 +14,12 @@ def read_comment(comment_id: int, db: Session = Depends(get_db)):
 
 @router.post("/")
 def create_comment(comment: CommentItem, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    # if user is None:
-    #     raise HTTPException(status_code=401, detail="Unauthorized")
     if comment.user_id != user.id and not user.is_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
+    if not check_dish(db, comment.dish_id):
+        raise HTTPException(status_code=404, detail="Dish not found")
+    # update the vote of the dish
+    
     return post_comment(db, comment)
 
 @router.delete("/{comment_id}")
@@ -40,3 +43,4 @@ def update_comment(comment_id: int, comment: CommentItem, db: Session = Depends(
 @router.get("/dish/{dish_id}")
 def read_comment_by_dish(dish_id: int, db: Session = Depends(get_db)):
     return get_comment_by_dish(db, dish_id)
+
