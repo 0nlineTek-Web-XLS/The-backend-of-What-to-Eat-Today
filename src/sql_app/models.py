@@ -24,6 +24,7 @@ class User(Base):   # This class is to be used in the future for user management
     username:Mapped[str] = mapped_column(String(20), index=True)
     sdu_id:Mapped[str | None] = mapped_column(String(20), index=True, unique=True, nullable=True)
     is_admin:Mapped[bool] = mapped_column(Boolean, default=False)
+    comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user")
 
 class Admin(Base):   # The users with privileges to do data modification, whose login should be different from the normal users
     __tablename__ = "admins"
@@ -38,11 +39,16 @@ class Comment(Base):   # This class is to be used in the future
     __tablename__ = "comments"
     
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))
-    dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"))
-    content:Mapped[str] = mapped_column(Text)
-    vote:Mapped[int] = mapped_column(Integer)
+    user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"), index=True)
+    content:Mapped[str] = mapped_column(Text, nullable=True)  # The content of the comment, can be empty with only a vote
+    vote:Mapped[float] = mapped_column(Numeric)  # The vote of the comment, default is 3.0
     time:Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
+    reply_to:Mapped[int | None] = mapped_column(Integer, ForeignKey("comments.id"), nullable=True, index=True, default=None)
+    user:Mapped['User'] = relationship("User")
+    dish:Mapped['Dish'] = relationship("Dish")
+    reply:Mapped[list["Comment"]] = relationship("Comment", back_populates="reply_to")
+
 
 
 class Canteen(Base):  
@@ -72,6 +78,9 @@ class Dish(Base):
     average_vote:Mapped[float] = mapped_column(Numeric, default=2.5, index=True)
     canteen_obj:Mapped['Canteen'] = relationship(back_populates="dishes")
     new_dishes: Mapped[list["NewDish"]] = relationship("NewDish", back_populates="dish")
+    comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="dish")
+    count_of_comments:Mapped[int] = mapped_column(Integer, default=0)
+    count_of_votes:Mapped[int] = mapped_column(Integer, default=0)
 
 class NewDish(Base):
     __tablename__ = "new_dishes"
@@ -89,3 +98,26 @@ class Carousel(Base):
     image:Mapped[bytes] = mapped_column(LargeBinary)
     canteen_obj:Mapped['Canteen'] = relationship(back_populates="carousels")
 
+class Feedback(Base):
+    __tablename__ = "feedbacks"
+    
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    content:Mapped[str] = mapped_column(Text)
+    time:Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
+    user:Mapped['User'] = relationship("User")
+    towards:Mapped[int] = mapped_column(Integer, index=True)
+    reply:Mapped[str] = mapped_column(Text, nullable=True)
+    reply_time:Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
+    reply_uid:Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
+    reply_user:Mapped['User'] = relationship("User", foreign_keys=[reply_uid])
+
+class Marks(Base):
+    __tablename__ = "marks"
+    
+    id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"), index=True)
+    time:Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
+    user:Mapped['User'] = relationship("User")
+    dish:Mapped['Dish'] = relationship("Dish")
