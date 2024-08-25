@@ -86,6 +86,7 @@ class Dish(Base):
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="dish")
     count_of_comments:Mapped[int] = mapped_column(Integer, default=0)
     count_of_votes:Mapped[int] = mapped_column(Integer, default=0)
+    count_of_mark:Mapped[int] = mapped_column(Integer, default=0)
 
 class NewDish(Base):
     __tablename__ = "new_dishes"
@@ -117,7 +118,7 @@ class Feedback(Base):
     reply_uid:Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     reply_user:Mapped['User'] = relationship("User", foreign_keys=[reply_uid])
 
-class Marks(Base):
+class Mark(Base):
     __tablename__ = "marks"
     
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
