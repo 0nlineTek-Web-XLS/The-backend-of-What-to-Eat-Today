@@ -1,22 +1,13 @@
-from fastapi import Depends, FastAPI, HTTPException, UploadFile, File
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI
 import dish
 import users
 import canteen
 import new
 import carousel
-from sql_app import crud, models, schemas
 from fastapi.middleware.cors import CORSMiddleware
-from random import choice
-from typing import List
-# from fastapi.staticfiles import StaticFiles
 import dish
-import pandas as pd
 import uvicorn
 import comments
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
 app = FastAPI()
 
