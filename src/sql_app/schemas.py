@@ -7,14 +7,12 @@ class DishBase(BaseModel):
 
     All dish items should belong to a window in a floor in a canteen.
 
-    Attributes:
-    canteen: int
-    floor: int
-    window: int
-    name: str
-    measure: str = '份'
-    price: float | None = None
-    
+    :param canteen: int
+    :param floor: int
+    :param window: int
+    :param name: str
+    :param measure: str = '份'
+    :param price: float | None = None
     """
     canteen: int
     floor: int
@@ -27,19 +25,20 @@ class DishItemUpdate(DishBase):
     """
     DishItemStored is the class for a dish item stored in the database.
 
-    Attributes:
-    id: int
-    canteen: int
-    floor: int
-    window: int
-    name: str
-    measure: str = '份'
-    price: float | None = None
+    :param id: int
+    :param canteen: int
+    :param floor: int
+    :param window: int
+    :param name: str
+    :param measure: str = '份'
+    :param price: float | None = None
     """
     id: int
 class DishItem(DishItemUpdate):
     """
-    DishItem is the class for a dish item returned to the client. It includes all the attributes of DishItemStored and some additional attributes.
+    DishItem is the class for a dish item returned to the client. 
+    
+    It includes all the attributes of DishItemStored and some additional attributes.
 
     Attributes:
     id: int
@@ -85,7 +84,7 @@ class CommentItem(BaseModel):
     user_id: int 
     dish_id: int 
     content: str
-    vote: int = 3
+    vote: float = 2.5
     time: datetime = datetime.now()
 
 class CommentStored(CommentItem):
@@ -156,3 +155,32 @@ class AdminData(BaseModel):
     id: int
     access_name: str
     user_id: int
+
+class FeedbackCreate(BaseModel):
+    content: str
+    time: datetime = datetime.now()
+    user_id: int
+    towards: int
+
+class FeedbackModify(FeedbackCreate):
+    id: int
+
+class FeedbackData(FeedbackModify)
+    reply: str | None = None
+    reply_time: datetime | None = None
+    reply_uid: int | None = None
+
+
+class FeedbackReplyCreate(BaseModel):
+    to: int
+    content: str
+    time: datetime = datetime.now()
+    user_id: int
+    
+class MarkCreate(BaseModel):
+    dish_id: int
+    user_id: int
+    time: datetime = datetime.now()
+
+class MarkData(MarkCreate):
+    id: int
