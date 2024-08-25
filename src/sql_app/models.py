@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Numeric,LargeBinary, Text, DateTime
+from sqlalchemy import Boolean, ForeignKey, Integer, String, Numeric,Text, DateTime
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
@@ -9,9 +9,9 @@ import datetime
 class Base(DeclarativeBase):
     pass
 
-class User(Base):   # This class is to be used in the future for user management
+class User(Base):
     """
-    This class is to be used in the future for user management
+    This class is to be used for user management
 
     Attributes:
     id: The id of the user
@@ -26,7 +26,10 @@ class User(Base):   # This class is to be used in the future for user management
     is_admin:Mapped[bool] = mapped_column(Boolean, default=False)
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user")
 
-class Admin(Base):   # The users with privileges to do data modification, whose login should be different from the normal users
+class Admin(Base):
+    """
+    This class is to be used for registering admins
+    """
     __tablename__ = "admins"
 
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -57,8 +60,9 @@ class Canteen(Base):
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     name:Mapped[str] = mapped_column(String(8), index=True, nullable=False, unique=True)
     description:Mapped[str] = mapped_column(Text, index=True)
-    image:Mapped[bytes] = mapped_column(LargeBinary)
+    image:Mapped[str] = mapped_column(Text)
     campus:Mapped[str] = mapped_column(String(8), index=True, nullable=False)
+    icon:Mapped[str] = mapped_column(Text, nullable = True)
     dishes: Mapped[list["Dish"]] = relationship(back_populates="canteen_obj")
     carousels: Mapped[list["Carousel"]] = relationship(back_populates="canteen_obj")
 
@@ -74,7 +78,7 @@ class Dish(Base):
     name:Mapped[str] = mapped_column(String(20), index=True, nullable=False)
     price:Mapped[float | None] = mapped_column(Numeric, nullable=True)
     measure:Mapped[str] = mapped_column(String(4), default="份")
-    image:Mapped[bytes] = mapped_column(LargeBinary, default=b'')
+    image:Mapped[str] = mapped_column(Text, nullable = True)
     average_vote:Mapped[float] = mapped_column(Numeric, default=2.5, index=True)
     canteen_obj:Mapped['Canteen'] = relationship(back_populates="dishes")
     new_dishes: Mapped[list["NewDish"]] = relationship("NewDish", back_populates="dish")
@@ -95,7 +99,7 @@ class Carousel(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     canteen:Mapped[int] = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
-    image:Mapped[bytes] = mapped_column(LargeBinary)
+    image:Mapped[str] = mapped_column(Text)
     canteen_obj:Mapped['Canteen'] = relationship(back_populates="carousels")
 
 class Feedback(Base):

@@ -53,14 +53,10 @@ def update_dish_pricing(
 
 @router.patch("/{dish_id}/image", response_model=DishItem)
 def update_dish_image(
-    dish_id: int, image: UploadFile, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
+    dish_id: int, image_url: str, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
 ) -> Dish:
     # check if valid image
-    try:
-        assert image.content_type.startswith("image")  # type: ignore
-    except:
-        raise HTTPException(status_code=400, detail="Invalid image")
-    return update_image(db, dish_id, image.file.read())
+    return update_image(db, dish_id, image_url)
 
 
 @router.delete("", deprecated=True)
