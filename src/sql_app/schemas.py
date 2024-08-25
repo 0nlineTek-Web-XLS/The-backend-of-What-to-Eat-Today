@@ -165,7 +165,7 @@ class FeedbackCreate(BaseModel):
 class FeedbackModify(FeedbackCreate):
     id: int
 
-class FeedbackData(FeedbackModify)
+class FeedbackData(FeedbackModify):
     reply: str | None = None
     reply_time: datetime | None = None
     reply_uid: int | None = None
