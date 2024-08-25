@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, UploadFile, HTTPException
+from fastapi import APIRouter, Depends
 from sql_app.crud import carousel 
 from sql_app import get_db
 from users import check_admin_privilege
