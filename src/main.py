@@ -6,6 +6,8 @@ import new
 import carousel
 from fastapi.middleware.cors import CORSMiddleware
 import dish
+import marks
+import feedback
 import uvicorn
 import comments
 
@@ -33,6 +35,9 @@ app.include_router(new.router, prefix="/new", tags=["new"])
 app.include_router(carousel.router, prefix="/carousel", tags=["carousel"])
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(comments.router, prefix="/comments", tags=["comments"])
+app.include_router(marks.router, prefix="/marks", tags=["marks"])
+app.include_router(feedback.router, prefix="/feedback", tags=["feedback"])
+
 
 if __name__ == "__main__":
     uvicorn.run(app="main:app", host="127.0.0.1", port=8000, reload=True)
