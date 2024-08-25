@@ -49,10 +49,10 @@ class DishItem(DishItemUpdate):
     measure: str = '份'
     price: float | None = None
     average_vote: float
-    image: bytes = b''
+    image: str | None = None
     """
     average_vote: float
-    image: bytes = b''
+    image: str | None = None
 class PricingData(BaseModel):
     """
     PricingData is the class for the pricing data of a dish item. It is used to update the price of a dish item.
@@ -72,10 +72,10 @@ class CarouselItem(BaseModel):
 
     Attributes:
     canteen: int
-    image: bytes = b''
+    image: str | None = None
     """
     canteen: int = 1
-    image: bytes = b''
+    image: str | None = None
     
 class CommentItem(BaseModel):
     """
@@ -100,12 +100,12 @@ class CanteenBase(BaseModel):
     Attributes:
     name: str
     description: str
-    image: bytes = b''
+    image: str | None = None
     campus: str
     """
     name: str
     description: str
-    image: bytes = b''
+    image: str | None = None
     campus: str
 
 class CanteenItem(CanteenBase):
@@ -116,7 +116,7 @@ class CanteenItem(CanteenBase):
     id: int
     name: str
     description: str
-    image: bytes = b''
+    image: str | None = None
     campus: str
     """
     id: int
