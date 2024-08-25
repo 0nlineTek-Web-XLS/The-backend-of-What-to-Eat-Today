@@ -12,6 +12,7 @@ def create(db: Session, feedback: FeedbackCreate):
     )
     db.add(db_feedback)
     db.commit()
+    db.refresh(db_feedback)
     return db_feedback
 
 def update_reply(db: Session, reply: FeedbackReplyCreate):

@@ -51,9 +51,8 @@ class Comment(Base):   # This class is to be used in the future
     reply_to:Mapped[int | None] = mapped_column(Integer, ForeignKey("comments.id"), nullable=True, index=True, default=None)
     user:Mapped['User'] = relationship("User")
     dish:Mapped['Dish'] = relationship("Dish")
-    reply:Mapped[list["Comment"]] = relationship("Comment", back_populates="reply_to")
-
-
+    replies: Mapped[list["Comment"]] = relationship("Comment", back_populates="reply_to_obj")
+    reply_to_obj:Mapped['Comment'] = relationship("Comment", remote_side=[id])
 
 class Canteen(Base):  
     __tablename__ = "canteens"
@@ -111,7 +110,7 @@ class Feedback(Base):
     user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
     content:Mapped[str] = mapped_column(Text)
     time:Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
-    user:Mapped['User'] = relationship("User")
+    user:Mapped['User'] = relationship("User", foreign_keys=[user_id])
     towards:Mapped[int] = mapped_column(Integer, index=True)
     reply:Mapped[str | None] = mapped_column(Text, nullable=True)
     reply_time:Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
