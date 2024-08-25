@@ -61,7 +61,7 @@ class Canteen(Base):
     id:Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
     name:Mapped[str] = mapped_column(String(8), index=True, nullable=False, unique=True)
     description:Mapped[str] = mapped_column(Text, index=True)
-    image:Mapped[str] = mapped_column(Text)
+    image:Mapped[str|None] = mapped_column(Text, nullable = True)
     campus:Mapped[str] = mapped_column(String(8), index=True, nullable=False)
     icon:Mapped[str] = mapped_column(Text, nullable = True)
     dishes: Mapped[list["Dish"]] = relationship(back_populates="canteen_obj")
