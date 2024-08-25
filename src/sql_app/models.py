@@ -45,7 +45,8 @@ class Comment(Base):   # This class is to be used in the future
     user_id:Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
     dish_id:Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"), index=True)
     content:Mapped[str] = mapped_column(Text, nullable=True)  # The content of the comment, can be empty with only a vote
-    vote:Mapped[float] = mapped_column(Numeric)  # The vote of the comment, default is 3.0
+    vote:Mapped[float] = mapped_column(Numeric)  
+    content_visible:Mapped[bool] = mapped_column(Boolean, default=False)
     time:Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
     reply_to:Mapped[int | None] = mapped_column(Integer, ForeignKey("comments.id"), nullable=True, index=True, default=None)
     user:Mapped['User'] = relationship("User")
@@ -111,7 +112,7 @@ class Feedback(Base):
     time:Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
     user:Mapped['User'] = relationship("User")
     towards:Mapped[int] = mapped_column(Integer, index=True)
-    reply:Mapped[str] = mapped_column(Text, nullable=True)
+    reply:Mapped[str | None] = mapped_column(Text, nullable=True)
     reply_time:Mapped[datetime.datetime | None] = mapped_column(DateTime, nullable=True)
     reply_uid:Mapped[int | None] = mapped_column(Integer, ForeignKey("users.id"), nullable=True)
     reply_user:Mapped['User'] = relationship("User", foreign_keys=[reply_uid])
