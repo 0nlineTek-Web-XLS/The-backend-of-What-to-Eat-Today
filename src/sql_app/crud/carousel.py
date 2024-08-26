@@ -14,9 +14,8 @@ def add(db: Session, carousel: CarouselItem):
 def get(db: Session, canteen: int):
     return db.query(Carousel).filter(Carousel.canteen == canteen).all()
 
-def delete(db: Session, carousel: CarouselItem):
-    db.query(Carousel).filter(Carousel.canteen == carousel.canteen) \
-        .filter(Carousel.image == carousel.image).delete()
+def delete(db: Session, cid: int):
+    db.query(Carousel).filter(Carousel.id == cid).delete()
     db.commit()
 
 
