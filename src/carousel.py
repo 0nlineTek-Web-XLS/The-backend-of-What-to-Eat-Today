@@ -13,8 +13,8 @@ def add_carousel(item: carousel.CarouselItem, db = Depends(get_db), privilege = 
 def get_carousel(canteen: int, db = Depends(get_db), ):
     return carousel.get(db, canteen)
 
-@router.delete('')
-def delete_carousel(item: carousel.CarouselItem, db = Depends(get_db), privilege = Depends(check_admin_privilege)
+@router.delete('/{cid}')
+def delete_carousel(cid: int, db = Depends(get_db), privilege = Depends(check_admin_privilege)
                     ):
-    return carousel.delete(db, item)
+    return carousel.delete(db, cid)
 
