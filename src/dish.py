@@ -11,6 +11,53 @@ from users import check_admin_privilege
 
 router = APIRouter()
 
+@router.get("/search/", response_model=list[DishItem])
+def search_dish_by_name_alike(
+    s: str, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
+) -> list[Dish]:
+    return search(db, s, skip=skip, limit=limit)
+
+@router.post("/search/advanced", response_model=list[DishItem])
+def advanced_search_dish(
+    data: AdvancedSearch = Depends(), db: Session = Depends(get_db)
+) -> list[Dish]:
+    return advanced_search(db, data)
+
+
+@router.get("/excel/sample", response_class=FileResponse)
+def get_excel_sample(
+    privileged = Depends(check_admin_privilege)
+) -> FileResponse:
+    return FileResponse("sample.xlsx")
+
+
+@router.post("/excel", response_model=list[DishItem])
+def upload_excel(file: UploadFile, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
+                 ) -> list[Dish]:
+    try:
+        df = pd.read_excel(file.file)
+    except:
+        raise HTTPException(400, detail="Invalid Excel File")
+    data_dict = df.to_dict("records")
+    canteen_dict = {i.name: i.id for i in get_all(db)}
+    # print(canteen_dict)
+    ret:list[Dish] = []
+    for dicts in data_dict:
+        dish_item: DishBase=DishBase(
+                canteen=canteen_dict[dicts["食堂"]],
+                floor=dicts["楼层"],
+                window=dicts["窗口"],
+                name=dicts["菜品"],
+                measure=dicts["单位"],
+                price=dicts["价格"],
+            )
+        
+        ret.append(add_dish(
+            dish_item,
+            db,
+        ))
+
+    return ret
 
 @router.get("/{canteen}/all", response_model=list[DishItem])
 def get_dish_by_canteen(canteen: int, db: Session = Depends(get_db)) -> list[Dish]:
@@ -103,50 +150,4 @@ def get_random_dish(canteen: int, db: Session = Depends(get_db)) -> Dish:
         raise HTTPException(422, detail="Invalid input")
 
 
-@router.get("/search/", response_model=list[DishItem])
-def search_dish_by_name_alike(
-    s: str, skip: int, limit: int, db: Session = Depends(get_db)
-) -> list[Dish]:
-    return search(db, s, skip=skip, limit=limit)
 
-@router.post("/search/advanced", response_model=list[DishItem])
-def advanced_search_dish(
-    data: AdvancedSearch, db: Session = Depends(get_db)
-) -> list[Dish]:
-    return advanced_search(db, data)
-
-
-@router.get("/excel/sample", response_class=FileResponse)
-def get_excel_sample(
-    privileged = Depends(check_admin_privilege)
-) -> FileResponse:
-    return FileResponse("sample.xlsx")
-
-
-@router.post("/excel", response_model=list[DishItem])
-def upload_excel(file: UploadFile, db: Session = Depends(get_db), privileged = Depends(check_admin_privilege)
-                 ) -> list[Dish]:
-    try:
-        df = pd.read_excel(file.file)
-    except:
-        raise HTTPException(400, detail="Invalid Excel File")
-    data_dict = df.to_dict("records")
-    canteen_dict = {i.name: i.id for i in get_all(db)}
-    # print(canteen_dict)
-    ret:list[Dish] = []
-    for dicts in data_dict:
-        dish_item: DishBase=DishBase(
-                canteen=canteen_dict[dicts["食堂"]],
-                floor=dicts["楼层"],
-                window=dicts["窗口"],
-                name=dicts["菜品"],
-                measure=dicts["单位"],
-                price=dicts["价格"],
-            )
-        
-        ret.append(add_dish(
-            dish_item,
-            db,
-        ))
-
-    return ret

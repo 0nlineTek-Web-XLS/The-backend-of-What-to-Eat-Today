@@ -10,14 +10,14 @@ router = APIRouter()
 @router.get("/all", response_model=list[CanteenItem])
 def get_all_canteen(db = Depends(get_db)):
     return canteen.get_all(db)
-@router.get("/{canteen_id}", response_model=CanteenItem)
-def get_canteen(canteen_id: int, db = Depends(get_db)):
-    return canteen.get_info(db, canteen_id)
+
 
 @router.get("/campus/{campus_name}",)
 def get_canteen_by_campus(campus_name: str, db = Depends(get_db)):
     return canteen.get_by_campus(db, campus_name)
-
+@router.get("/{canteen_id}", response_model=CanteenItem)
+def get_canteen(canteen_id: int, db = Depends(get_db)):
+    return canteen.get_info(db, canteen_id)
 @router.post("", response_model=CanteenItem)
 def add_canteen(data: CanteenBase, db = Depends(get_db), privilege = Depends(check_admin_privilege)):
     return canteen.add(db, data)
