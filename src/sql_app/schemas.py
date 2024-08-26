@@ -189,3 +189,10 @@ class FloorData(BaseModel):
     canteen: int
     floor: int
     count_of_windows: int
+
+
+class FloorStored(BaseModel):
+    id: int
+    canteen: int
+    floor_in_canteen: int
+    count_of_windows: int

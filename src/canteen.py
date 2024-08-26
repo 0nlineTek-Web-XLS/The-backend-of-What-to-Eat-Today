@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 
 from sql_app.crud import canteen
-from sql_app.schemas import CanteenItem, CanteenBase, FloorData
+from sql_app.schemas import CanteenItem, CanteenBase, FloorData, FloorStored
 from sql_app import get_db
 from users import check_admin_privilege
 
@@ -38,12 +38,12 @@ def get_canteen(canteen_id: int, db=Depends(get_db)):
     return canteen.get_info(db, canteen_id)
 
 
-@router.get("/{cantten_id}/floors", response_model=list[FloorData])
+@router.get("/{cantten_id}/floors", response_model=list[FloorStored])
 def get_floors(canteen_id: int, db=Depends(get_db)):
     return canteen.get_floors_info(db, canteen_id)
 
 
-@router.post("/{canteen_id}/floors", response_model=FloorData)
+@router.post("/{canteen_id}/floors", response_model=FloorStored)
 def add_floor(
     canteen_id: int,
     data: FloorData,

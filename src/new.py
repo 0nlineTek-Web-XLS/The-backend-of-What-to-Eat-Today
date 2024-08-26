@@ -21,5 +21,5 @@ def get_new_dish(canteen: int, db = Depends(get_db)) -> List[Dish]:
 
 @router.delete('/{dish_id}')
 def delete_new_dish(dish_id:int, db = Depends(get_db), privilege = Depends(check_admin_privilege)
-                    ) -> None:
+                    ):
     return new_dish.delete(db,  dish_id=dish_id)
