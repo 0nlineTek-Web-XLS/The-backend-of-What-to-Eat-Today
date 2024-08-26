@@ -155,7 +155,7 @@ def read_user(
 
 
 @router.post("/admin/register", response_model=AdminData)
-def create_admin_user(form_data: AdminCreate = Depends(), db=Depends(get_db)) -> Admin:
+def create_admin_user(form_data: AdminCreate, db=Depends(get_db)) -> Admin:
     new_user: User = user.register_user(
         db, username=form_data.access_name, sdu_id=None, is_admin=True
     )
