@@ -24,6 +24,7 @@ class User(Base):
     username:Mapped[str] = mapped_column(String(20), index=True)
     sdu_id:Mapped[str | None] = mapped_column(String(20), index=True, unique=True, nullable=True)
     is_admin:Mapped[bool] = mapped_column(Boolean, default=False)
+    image:Mapped[str] = mapped_column(Text, nullable = True)
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="user")
 
 class Admin(Base):
@@ -63,9 +64,28 @@ class Canteen(Base):
     image:Mapped[str|None] = mapped_column(Text, nullable = True)
     campus:Mapped[str] = mapped_column(String(8), index=True, nullable=False)
     icon:Mapped[str] = mapped_column(Text, nullable = True)
+    floors_count:Mapped[int] = mapped_column(Integer)
+    floors: Mapped[list["Floor"]] = relationship(back_populates="canteen_obj")
     dishes: Mapped[list["Dish"]] = relationship(back_populates="canteen_obj")
     carousels: Mapped[list["Carousel"]] = relationship(back_populates="canteen_obj")
 
+class Floor(Base):
+    __tablename__ = "floors"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    canteen: Mapped[int] = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
+    floor_in_canteen: Mapped[int] = mapped_column(Integer, index=True)  # The floor number in the canteen, 1, 2, 3, ...
+    count_of_windows: Mapped[int] = mapped_column(Integer)
+    windows: Mapped[list["Window"]] = relationship(back_populates="floor_obj")
+    canteen_obj: Mapped['Canteen'] = relationship(back_populates="floors")
+
+class Window(Base):
+    __tablename__ = "windows"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    floor: Mapped[int] = mapped_column(Integer, ForeignKey("floors.id"), index=True)
+    window_in_floor: Mapped[int] = mapped_column(Integer, index=True)  # The window number in the floor, #1, #2, #3, ...
+    floor_obj: Mapped['Floor'] = relationship(back_populates="windows")
 
 
 class Dish(Base):

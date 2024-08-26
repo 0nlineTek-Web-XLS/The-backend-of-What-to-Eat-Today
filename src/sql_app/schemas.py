@@ -144,7 +144,7 @@ class UserData(BaseModel):
     username: str
     sdu_id: str | None
     is_admin: bool
-
+    image: str | None = None
 
 class AdminCreate(BaseModel):
     access_name: str
