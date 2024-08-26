@@ -25,6 +25,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    refresh_token: str
 
 
 def verify_password(plain_password, hashed_password) -> bool:
@@ -68,7 +69,11 @@ def create_token(
         "is_admin": is_admin,
         "exp": datetime.now() + time_expire,
     }
-    return Token(access_token=jwt.encode(payload, SECRET_KEY, algorithm="HS256"))
+    payload_refresh = {
+        "sub": user_id,
+        "exp": datetime.now() + timedelta(days=14),
+    }
+    return Token(access_token=jwt.encode(payload, SECRET_KEY, algorithm="HS256"), refresh_token=jwt.encode(payload_refresh, SECRET_KEY, algorithm="HS256"))
 
 
 def authenticate_user(username: str, password: str, db):
@@ -116,6 +121,24 @@ def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db=Depends(get_db)
 ):
     return authenticate_user(form_data.username, form_data.password, db)
+
+@router.post("/token/refresh")
+def refresh_token(token: Token):
+    try:
+        payload = jwt.decode(token.access_token, SECRET_KEY, algorithms=["HS256"])
+        user_id: int = payload.get("sub")
+        assert user_id is not None
+        payload_refresh = jwt.decode(token.refresh_token, SECRET_KEY, algorithms=["HS256"])
+        assert user_id is not None
+    except:
+        raise HTTPException(
+            status_code=401, detail="Could not validate credentials"
+        )
+    if user_id != payload_refresh.get("sub"):
+        raise HTTPException(
+            status_code=401, detail="Could not validate credentials"
+        )
+    return create_token(user_id, payload.get("is_admin"))
 
 
 @router.get("/users/{user_id}", response_model=UserData)
