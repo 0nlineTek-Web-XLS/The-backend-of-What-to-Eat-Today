@@ -184,3 +184,8 @@ class MarkCreate(BaseModel):
 
 class MarkData(MarkCreate):
     id: int
+
+class FloorData(BaseModel):
+    canteen: int
+    floor: int
+    count_of_windows: int

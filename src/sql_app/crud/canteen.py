@@ -1,7 +1,8 @@
+from sqlalchemy.sql.expression import and_
 from sqlalchemy.orm import Session
 
-from ..models import Canteen
-from ..schemas import CanteenBase, CanteenItem
+from ..models import Canteen, Floor
+from ..schemas import CanteenBase, CanteenItem, FloorData
 
 def get_info(db: Session, canteen_id: int) -> Canteen | None:
     """
@@ -53,3 +54,37 @@ def get_by_campus(db: Session, campus_name: str) -> list[Canteen]:
     Get all canteens in a campus.
     """
     return db.query(Canteen).filter(Canteen.campus == campus_name).all()
+
+def search(db: Session, name: str) -> list[Canteen]:
+    """
+    Search canteens by name.
+    """
+    return db.query(Canteen).filter(Canteen.name.like(f"%{name}%")).all()
+
+def get_floors_info(db: Session, canteen_id: int) -> list[Floor]:
+    """
+    Get the floors information of a canteen.
+    """
+    return db.query(Floor).filter(Floor.canteen == canteen_id).all()
+
+def update_floor_info(db: Session, floor: FloorData) -> dict[str, str]:
+    """
+    Update the information of a floor.
+    """
+    db_floor: Floor | None = db.query(Floor).filter(and_(Floor.canteen == floor.canteen, Floor.floor_in_canteen == floor.floor)).first()
+    assert db_floor, "No such floor"
+    db_floor.count_of_windows = floor.count_of_windows
+    db.commit()
+    return {"detail": "Update Success"}
+
+def add_floor(db: Session, floor: FloorData) -> Floor:
+    """
+    Add the information of a floor.
+    """
+    db_floor = Floor(canteen=floor.canteen, 
+                     floor_in_canteen=floor.floor, 
+                     count_of_windows=floor.count_of_windows)
+    db.add(db_floor)
+    db.commit()
+    db.refresh(db_floor)
+    return db_floor
