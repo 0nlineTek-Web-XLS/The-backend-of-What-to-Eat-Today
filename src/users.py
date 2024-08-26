@@ -175,3 +175,21 @@ def read_admin_me(
     if ret is None:
         raise HTTPException(status_code=404, detail="Admin not found")
     return ret
+
+@router.patch("/me/image")
+async def update_user_image(image: str, db=Depends(get_db), current_user: User = Depends(get_current_user)):
+    try:
+        user.update_user_image(db, current_user.id, image)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "Image updated successfully"}
+
+@router.put("/{uid}", response_model=UserData)
+async def update_user(uid: int, data: UserData, db=Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.is_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    try:
+        user.update_user(db, uid, data)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user.get_user(db, uid)
