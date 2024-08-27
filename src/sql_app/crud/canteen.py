@@ -23,7 +23,11 @@ def add(db: Session, canteen: CanteenBase) -> Canteen:
     db_canteen = Canteen(name=canteen.name, 
                           description=canteen.description,
                           image=canteen.image, 
-                          campus=canteen.campus)
+                          campus=canteen.campus,
+                          icon=canteen.icon,
+                            floors_count=canteen.floors_count)
+    
+
     db.add(db_canteen)
     db.commit()
     db.refresh(db_canteen)

@@ -107,6 +107,8 @@ class CanteenBase(BaseModel):
     description: str
     image: str | None = None
     campus: str
+    floors_count: int
+    icon: str | None = None
 
 class CanteenItem(CanteenBase):
     """
