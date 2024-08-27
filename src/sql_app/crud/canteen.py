@@ -49,7 +49,9 @@ def update(db: Session, data: CanteenItem) -> dict[str, str]:
     assert db_canteen, "No such canteen"
     db_canteen.name = data.name
     db_canteen.description = data.description
-    db_canteen.image = data.image if data.image else db_canteen.image
+    db_canteen.image = data.image
+    db_canteen.icon = data.icon
+    db_canteen.floors_count = data.floors_count
     db.commit()
     return {"detail": "Update Success"}
 

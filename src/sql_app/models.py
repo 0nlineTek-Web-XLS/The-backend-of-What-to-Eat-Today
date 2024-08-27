@@ -63,7 +63,7 @@ class Canteen(Base):
     description:Mapped[str] = mapped_column(Text, index=True)
     image:Mapped[str|None] = mapped_column(Text, nullable = True)
     campus:Mapped[str] = mapped_column(String(8), index=True, nullable=False)
-    icon:Mapped[str] = mapped_column(Text, nullable = True)
+    icon:Mapped[str|None] = mapped_column(Text, nullable = True)
     floors_count:Mapped[int] = mapped_column(Integer)
     floors: Mapped[list["Floor"]] = relationship(back_populates="canteen_obj")
     dishes: Mapped[list["Dish"]] = relationship(back_populates="canteen_obj")
