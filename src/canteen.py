@@ -38,7 +38,7 @@ def get_canteen(canteen_id: int, db=Depends(get_db)):
     return canteen.get_info(db, canteen_id)
 
 
-@router.get("/{cantten_id}/floors", response_model=list[FloorStored])
+@router.get("/{canteen_id}/floors", response_model=list[FloorStored])
 def get_floors(canteen_id: int, db=Depends(get_db)):
     return canteen.get_floors_info(db, canteen_id)
 
