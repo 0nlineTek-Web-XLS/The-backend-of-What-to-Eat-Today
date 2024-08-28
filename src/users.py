@@ -42,13 +42,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) ->
         user_id: int = payload.get("sub")
         assert user_id is not None
     except jwt.ExpiredSignatureError:
-        raise HTTPException(
+        raise HTTPException(# pylint: disable=raise-missing-from
             status_code=401, detail="Token has expired"
-        )  # pylint: disable=raise-missing-from
+        )  
     except:
-        raise HTTPException(
+        raise HTTPException(# pylint: disable=raise-missing-from
             status_code=401, detail="Could not validate credentials"
-        )  # pylint: disable=raise-missing-from
+        )  
     db_user: User | None = user.get_user(db, user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")

@@ -1,3 +1,4 @@
+import decimal
 from sqlalchemy import Boolean, ForeignKey, Integer, String, Numeric,Text, DateTime
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -96,10 +97,10 @@ class Dish(Base):
     floor:Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     window:Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     name:Mapped[str] = mapped_column(String(20), index=True, nullable=False)
-    price:Mapped[float | None] = mapped_column(Numeric, nullable=True)
+    price:Mapped[decimal.Decimal | None] = mapped_column(Numeric, nullable=True)
     measure:Mapped[str] = mapped_column(String(4), default="份")
     image:Mapped[str] = mapped_column(Text, nullable = True)
-    average_vote:Mapped[float] = mapped_column(Numeric, default=2.5, index=True)
+    average_vote:Mapped[decimal.Decimal] = mapped_column(Numeric, default=2.5, index=True)
     canteen_obj:Mapped['Canteen'] = relationship(back_populates="dishes")
     new_dishes: Mapped[list["NewDish"]] = relationship("NewDish", back_populates="dish")
     comments: Mapped[list["Comment"]] = relationship("Comment", back_populates="dish")

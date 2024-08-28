@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-
+from decimal import Decimal
 from ..models import Comment, Dish
 from ..schemas import CommentItem
 
@@ -13,7 +13,8 @@ def post_comment(db: Session, comment: CommentItem):
     assert db_dish, "No such dish"
     if comment.content:
         db_dish.count_of_comments += 1
-    db_dish.average_vote = (db_dish.average_vote * db_dish.count_of_votes + comment.vote) / (db_dish.count_of_votes + 1)
+    
+    db_dish.average_vote = (db_dish.average_vote * db_dish.count_of_votes + Decimal(comment.vote)) / (db_dish.count_of_votes + 1)
     db_dish.count_of_votes += 1
     db.add(db_comment)
     db.commit()
@@ -35,7 +36,7 @@ def delete(db: Session, comment_id: int):
     assert db_dish, "No such dish"
     if item.content:
         db_dish.count_of_comments -= 1
-    db_dish.average_vote = (db_dish.average_vote * db_dish.count_of_votes - item.vote) / (db_dish.count_of_votes - 1)
+    db_dish.average_vote = (db_dish.average_vote * db_dish.count_of_votes - Decimal(item.vote)) / (db_dish.count_of_votes - 1)
     db_dish.count_of_votes -= 1
     db.delete(item)
     db.commit()
@@ -48,7 +49,7 @@ def update(db: Session, comment_id: int, comment: CommentItem):
     db_comment.vote = comment.vote
     db_dish: Dish | None = db.query(Dish).filter(Dish.id == comment.dish_id).first()
     assert db_dish, "No such dish"
-    db_dish.average_vote = (db_dish.average_vote * db_dish.count_of_votes - original_vote + comment.vote) / db_dish.count_of_votes
+    db_dish.average_vote = (db_dish.average_vote * db_dish.count_of_votes - Decimal(original_vote) + Decimal(comment.vote)) / db_dish.count_of_votes
     db_comment.content = comment.content
     db_comment.dish_id = comment.dish_id
     db.commit()
