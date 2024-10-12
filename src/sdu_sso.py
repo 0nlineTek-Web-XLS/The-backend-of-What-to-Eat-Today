@@ -5,8 +5,8 @@ def login(username, password, baseURL="https://pass.sdu.edu.cn/") -> str:
 # 发送第一个请求，获取ticket
     ticket = httpx.post(
         f"{baseURL}cas/restlet/tickets",
-        # data={"username": username, "password": password, "lt": "LT-1-1-1"},
-        content=f'username={username}&password={password}&lt=LT-1-1-1',
+        # data={"username": username, "password": password},
+        content=f'username={username}&password={password}',
     ).text
 
     # 检查ticket是否以TGT开头
@@ -31,3 +31,9 @@ def get_user_name_and_id(sTicket, baseURL="https://pass.sdu.edu.cn/") -> tuple[s
     name = user_data.getElementsByTagName("cas:USER_NAME")[0].childNodes[0].data
     student_id = user_data.getElementsByTagName("sso:user")[0].childNodes[0].data
     return name, student_id
+
+if __name__ == "__main__":
+    import getpass
+    username = input("Username: ")
+    password = getpass.getpass()
+    print(get_user_name_and_id(login(username, password)))
