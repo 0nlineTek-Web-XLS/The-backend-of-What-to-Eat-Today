@@ -8,6 +8,8 @@ router = APIRouter()
 
 @router.post('')
 def add_mark(mark: marks.MarkCreate, db = Depends(get_db), user: User = Depends(get_current_user)):
+    if user.id != mark.user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
     return marks.add(db, mark)
 
 @router.get('/user/{uid}')
