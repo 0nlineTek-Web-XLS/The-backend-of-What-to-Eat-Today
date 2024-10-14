@@ -1,6 +1,9 @@
+import decimal
 from pydantic import BaseModel
 
 from datetime import datetime
+
+
 class DishBase(BaseModel):
     """
     DishBase is the base class for a dish item.
@@ -14,12 +17,14 @@ class DishBase(BaseModel):
     :param measure: str = '份'
     :param price: float | None = None
     """
+
     canteen: int
     floor: int
     window: int
     name: str
-    measure: str = '份'
+    measure: str = "份"
     price: float | None = None
+
 
 class DishItemUpdate(DishBase):
     """
@@ -33,11 +38,14 @@ class DishItemUpdate(DishBase):
     :param measure: str = '份'
     :param price: float | None = None
     """
+
     id: int
+
+
 class DishItem(DishItemUpdate):
     """
-    DishItem is the class for a dish item returned to the client. 
-    
+    DishItem is the class for a dish item returned to the client.
+
     It includes all the attributes of DishItemStored and some additional attributes.
 
     Attributes:
@@ -51,8 +59,11 @@ class DishItem(DishItemUpdate):
     average_vote: float
     image: str | None = None
     """
+
     average_vote: float
     image: str | None = None
+
+
 class PricingData(BaseModel):
     """
     PricingData is the class for the pricing data of a dish item. It is used to update the price of a dish item.
@@ -63,8 +74,10 @@ class PricingData(BaseModel):
 
     For example, if you want to update the price of a dish item with id 1 to 10.5 yuan per 份, you can use PricingData(id=1, price=10.5).
     """
+
     price: float
-    measure: str = '份'
+    measure: str = "份"
+
 
 class CarouselItem(BaseModel):
     """
@@ -74,24 +87,30 @@ class CarouselItem(BaseModel):
     canteen: int
     image: str | None = None
     """
+
     canteen: int = 1
     image: str | None = None
-    
+
+
 class CommentItem(BaseModel):
     """
     CommentItem is the class for a comment item.
     """
-    user_id: int 
-    dish_id: int 
+
+    user_id: int
+    dish_id: int
     content: str
-    vote: float = 2.5
+    vote: decimal.Decimal = decimal.Decimal(2.5)
     time: datetime = datetime.now()
+
 
 class CommentStored(CommentItem):
     """
     CommentStored is the class for a comment item stored in the database.
     """
+
     id: int
+
 
 class CanteenBase(BaseModel):
     """
@@ -103,12 +122,14 @@ class CanteenBase(BaseModel):
     image: str | None = None
     campus: str
     """
+
     name: str
     description: str
     image: str | None = None
     campus: str
     floors_count: int
     icon: str | None = None
+
 
 class CanteenItem(CanteenBase):
     """
@@ -121,7 +142,9 @@ class CanteenItem(CanteenBase):
     image: str | None = None
     campus: str
     """
+
     id: int
+
 
 class AdvancedSearch(BaseModel):
     """
@@ -133,10 +156,11 @@ class AdvancedSearch(BaseModel):
     window: int | None = None
     name: str | None = None
     """
+
     canteen: list[int] = []
     floor: list[int] = []
     window: list[int] = []
-    name: str = ''
+    name: str = ""
     skip: int = 0
     limit: int = 200
 
@@ -148,15 +172,18 @@ class UserData(BaseModel):
     is_admin: bool
     image: str | None = None
 
+
 class AdminCreate(BaseModel):
     access_name: str
     password: str
     user_id: int | None = None
-    
+
+
 class AdminData(BaseModel):
     id: int
     access_name: str
     user_id: int
+
 
 class FeedbackCreate(BaseModel):
     content: str
@@ -164,8 +191,10 @@ class FeedbackCreate(BaseModel):
     user_id: int
     towards: int
 
+
 class FeedbackModify(FeedbackCreate):
     id: int
+
 
 class FeedbackData(FeedbackModify):
     reply: str | None = None
@@ -178,14 +207,17 @@ class FeedbackReplyCreate(BaseModel):
     content: str
     time: datetime = datetime.now()
     user_id: int
-    
+
+
 class MarkCreate(BaseModel):
     dish_id: int
     user_id: int
     time: datetime = datetime.now()
 
+
 class MarkData(MarkCreate):
     id: int
+
 
 class FloorData(BaseModel):
     canteen: int

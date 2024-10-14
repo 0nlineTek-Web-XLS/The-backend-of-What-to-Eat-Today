@@ -18,6 +18,7 @@ router = APIRouter()
 SECRET_KEY = os.getenv("SECRET_KEY")
 if SECRET_KEY is None:
     SECRET_KEY = "test"  # fallback to development key
+    print("Warning: SECRET_KEY not found in environment variables, using default key")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/token")
 
@@ -44,11 +45,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) ->
     except jwt.ExpiredSignatureError:
         raise HTTPException(# pylint: disable=raise-missing-from
             status_code=401, detail="Token has expired"
-        )  
+        )
     except:
         raise HTTPException(# pylint: disable=raise-missing-from
             status_code=401, detail="Could not validate credentials"
-        )  
+        )
     db_user: User | None = user.get_user(db, user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -59,7 +60,7 @@ def check_admin_privilege(token: str = Depends(oauth2_scheme), db=Depends(get_db
     user: User = get_current_user(token, db)
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Unauthorized")
-
+    return user
 
 def create_token(
     user_id: int, is_admin: bool, time_expire=timedelta(minutes=15)
@@ -97,7 +98,6 @@ def authenticate_user(username: str, password: str, db):
             # check if password is correct
             if verify_password(password, admin_in_db.password):
                 return create_token(admin_in_db.user_id, True)
-
             raise HTTPException(status_code=401, detail="Invalid credentials")
     else:
         # use sdu sso to login and return the token
@@ -129,7 +129,6 @@ def refresh_token(token: Token):
         user_id: int = payload.get("sub")
         assert user_id is not None
         payload_refresh = jwt.decode(token.refresh_token, SECRET_KEY, algorithms=["HS256"])
-        assert user_id is not None
     except:
         raise HTTPException(
             status_code=401, detail="Could not validate credentials"
@@ -186,7 +185,7 @@ async def update_user_image(image: str, db=Depends(get_db), current_user: User =
 
 @router.put("/{uid}", response_model=UserData)
 async def update_user(uid: int, data: UserData, db=Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.is_admin:
+    if not current_user.is_admin or current_user.id != uid or data.id != uid or data.id != current_user.id:
         raise HTTPException(status_code=401, detail="Unauthorized")
     try:
         user.update_user(db, uid, data)
