@@ -1,7 +1,7 @@
 [project]
 name = "The-backend-of-What-to-Eat-Today"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "The backend of What to Eat Today"
 authors = [
     {name = "0nlineTek Web XLS", email = "xls-0nlinetek@hotmail.com"},
 ]
