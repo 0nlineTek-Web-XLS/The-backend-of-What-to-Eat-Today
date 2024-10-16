@@ -15,7 +15,7 @@ class DishBase(BaseModel):
     :param window: int
     :param name: str
     :param measure: str = '份'
-    :param price: float | None = None
+    :param price: Decimal | None = None
     """
 
     canteen: int
@@ -23,7 +23,7 @@ class DishBase(BaseModel):
     window: int
     name: str
     measure: str = "份"
-    price: float | None = None
+    price: decimal.Decimal | None = None
 
 
 class DishItemUpdate(DishBase):
@@ -36,7 +36,7 @@ class DishItemUpdate(DishBase):
     :param window: int
     :param name: str
     :param measure: str = '份'
-    :param price: float | None = None
+    :param price: Decimal | None = None
     """
 
     id: int
@@ -55,12 +55,12 @@ class DishItem(DishItemUpdate):
     window: int
     name: str
     measure: str = '份'
-    price: float | None = None
-    average_vote: float
+    price: Decimal | None = None
+    average_vote: Decimal
     image: str | None = None
     """
 
-    average_vote: float
+    average_vote: decimal.Decimal
     image: str | None = None
 
 
@@ -69,13 +69,13 @@ class PricingData(BaseModel):
     PricingData is the class for the pricing data of a dish item. It is used to update the price of a dish item.
 
     Attributes:
-    price: float
+    price: Decimal
     measure: str = '份'
 
     For example, if you want to update the price of a dish item with id 1 to 10.5 yuan per 份, you can use PricingData(id=1, price=10.5).
     """
 
-    price: float
+    price: decimal.Decimal
     measure: str = "份"
 
 
