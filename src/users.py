@@ -81,7 +81,9 @@ def authenticate_user(username: str, password: str, db):
     # check if username exists
     user_in_db: User | None = user.get_user_by_sdu_id(db, username)
     if user_in_db is None:
-        # check if admin login system successful
+        # This user has never logged in before, so we try to register the user via sdu sso.
+        # But another situation is that this user is an admin with no sdu_id.
+        # check if admin login system successful.
         admin_in_db: Admin | None = user.get_admin_by_username(db, username)
         if admin_in_db is None:
             # This is not an admin, so we try to register the user via sdu sso
@@ -92,14 +94,17 @@ def authenticate_user(username: str, password: str, db):
             except:
                 raise HTTPException(  # pylint: disable=raise-missing-from
                     status_code=401, detail="Invalid credentials"
-                )  
+                )
             user_in_db = user.register_user(db, name, sdu_id)
+            return create_token(user_in_db.id, user_in_db.is_admin)
         else:
-            # check if password is correct
+            # This is an admin, so we try to login via admin system.
+            # check if password is correct.
             if verify_password(password, admin_in_db.password):
                 return create_token(admin_in_db.user_id, True)
             raise HTTPException(status_code=401, detail="Invalid credentials")
     else:
+        # This user has a record in users table, user_in_db not None
         # use sdu sso to login and return the token
         try:
             sTicket = sdu_sso.login(username, password)
@@ -107,8 +112,8 @@ def authenticate_user(username: str, password: str, db):
         except:
             raise HTTPException(    # pylint: disable=raise-missing-from
                 status_code=401, detail="Invalid credentials"
-            )  
-        return create_token(user_in_db.id, False)
+            )
+        return create_token(user_in_db.id, user_in_db.is_admin)
 
 
 @router.get("/me", response_model=UserData)
