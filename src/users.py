@@ -56,16 +56,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_db)) ->
     return db_user
 
 
-def check_admin_privilege(token: str = Depends(oauth2_scheme), db=Depends(get_db), require: str = "ALL"):
+def check_admin_privilege(token: str = Depends(oauth2_scheme), db=Depends(get_db)):
     user_data: User = get_current_user(token, db)
     if not user_data.is_admin:
         raise HTTPException(status_code=403, detail="Unauthorized")
     admin: Admin | None = user.get_admin_by_user_id(db, user_data.id)
     if admin is None:
         raise HTTPException(status_code=403, detail="Unauthorized")
-    if require not in admin.privileges.split(","):
-        raise HTTPException(status_code=403, detail="Unauthorized")
-    return user
+    return admin.privileges.split(",")
 
 def create_token(
     user_id: int, is_admin: bool, time_expire=timedelta(minutes=15)
