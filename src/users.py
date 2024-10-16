@@ -155,6 +155,9 @@ def read_user(
 
 @router.post("/admin/register", response_model=AdminData)
 def create_admin_user(form_data: AdminCreate, db=Depends(get_db)) -> Admin:
+    # check if user already exists
+    if user.get_admin_by_username(db, form_data.access_name) is not None:
+        raise HTTPException(status_code=400, detail="User already registered")
     new_user: User = user.register_user(
         db, username=form_data.access_name, sdu_id=None, is_admin=True
     )
