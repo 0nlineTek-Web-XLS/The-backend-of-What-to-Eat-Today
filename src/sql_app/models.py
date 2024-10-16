@@ -16,12 +16,6 @@ class Base(DeclarativeBase):
 class User(Base):
     """
     This class is to be used for user management
-
-    Attributes:
-    id: The id of the user
-    username: The username of the user
-    sdu_id: The sdu_id of the user
-    is_admin: The boolean value of whether the user is an admin
     """
 
     __tablename__ = "users"
@@ -54,9 +48,13 @@ class Admin(Base):
         String(20), index=True, unique=True, nullable=False
     )
     password: Mapped[str] = mapped_column(String(64), index=True)
+    privileges: Mapped[str] = mapped_column(Text, default="ALL")
 
 
 class Comment(Base):  # This class is to be used in the future
+    """
+    Comment class for comments on dishes
+    """
     __tablename__ = "comments"
 
     id: Mapped[int] = mapped_column(
@@ -66,9 +64,9 @@ class Comment(Base):  # This class is to be used in the future
     dish_id: Mapped[int] = mapped_column(Integer, ForeignKey("dishes.id"), index=True)
     content: Mapped[str] = mapped_column(
         Text, nullable=True
-    )  # The content of the comment, can be empty with only a vote
+    )  # The content of the comment, can be empty with only a vote (Which is usually the case. Few people leave comments)
     vote: Mapped[decimal.Decimal] = mapped_column(Numeric)
-    content_visible: Mapped[bool] = mapped_column(Boolean, default=False)
+    content_visible: Mapped[bool] = mapped_column(Boolean, default=False)  # Only selected comments are visible to all
     time: Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
     reply_to: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("comments.id"), nullable=True, index=True, default=None
@@ -110,7 +108,7 @@ class Floor(Base):
     floor_in_canteen: Mapped[int] = mapped_column(
         Integer, index=True
     )  # The floor number in the canteen, 1, 2, 3, ...
-    count_of_windows: Mapped[int] = mapped_column(Integer)
+    count_of_windows: Mapped[int] = mapped_column(Integer, default=0)
     windows: Mapped[list["Window"]] = relationship(back_populates="floor_obj")
     canteen_obj: Mapped["Canteen"] = relationship(back_populates="floors")
 
@@ -140,6 +138,9 @@ class Dish(Base):
     canteen: Mapped[int] = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
     floor: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     window: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    # Above is sometimes considered ugly, but it is necessary for the database to be efficient, 
+    # as the canteen, floor, and window are the most frequently used fields in the database.
+    # By doing so no extra query or join is needed to get the canteen, floor, and window of a dish.
     name: Mapped[str] = mapped_column(String(20), index=True, nullable=False)
     price: Mapped[decimal.Decimal | None] = mapped_column(Numeric, nullable=True)
     measure: Mapped[str] = mapped_column(String(4), default="份")
