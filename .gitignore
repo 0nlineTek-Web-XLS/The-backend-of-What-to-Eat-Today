@@ -164,3 +164,4 @@ cython_debug/
 
 # created Database
 sql_app.db
+minio_env.sh
