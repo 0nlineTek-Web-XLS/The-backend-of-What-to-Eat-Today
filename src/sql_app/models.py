@@ -55,6 +55,7 @@ class Comment(Base):  # This class is to be used in the future
     """
     Comment class for comments on dishes
     """
+
     __tablename__ = "comments"
 
     id: Mapped[int] = mapped_column(
@@ -66,7 +67,9 @@ class Comment(Base):  # This class is to be used in the future
         Text, nullable=True
     )  # The content of the comment, can be empty with only a vote (Which is usually the case. Few people leave comments)
     vote: Mapped[decimal.Decimal] = mapped_column(Numeric)
-    content_visible: Mapped[bool] = mapped_column(Boolean, default=False)  # Only selected comments are visible to all
+    content_visible: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )  # Only selected comments are visible to all
     time: Mapped[datetime.datetime] = mapped_column(DateTime, index=True)
     reply_to: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("comments.id"), nullable=True, index=True, default=None
@@ -109,27 +112,14 @@ class Floor(Base):
         Integer, index=True
     )  # The floor number in the canteen, 1, 2, 3, ...
     count_of_windows: Mapped[int] = mapped_column(Integer, default=0)
-    windows: Mapped[list["Window"]] = relationship(back_populates="floor_obj")
     canteen_obj: Mapped["Canteen"] = relationship(back_populates="floors")
-
-
-class Window(Base):
-    __tablename__ = "windows"
-
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, index=True, autoincrement=True
-    )
-    floor: Mapped[int] = mapped_column(Integer, ForeignKey("floors.id"), index=True)
-    window_in_floor: Mapped[int] = mapped_column(
-        Integer, index=True
-    )  # The window number in the floor, #1, #2, #3, ...
-    floor_obj: Mapped["Floor"] = relationship(back_populates="windows")
 
 
 class Dish(Base):
     """
     This class is to be used for dishes.
     """
+
     __tablename__ = "dishes"
 
     id: Mapped[int] = mapped_column(
@@ -138,7 +128,7 @@ class Dish(Base):
     canteen: Mapped[int] = mapped_column(Integer, ForeignKey("canteens.id"), index=True)
     floor: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
     window: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
-    # Above is sometimes considered ugly, but it is necessary for the database to be efficient, 
+    # Above is sometimes considered ugly, but it is necessary for the database to be efficient,
     # as the canteen, floor, and window are the most frequently used fields in the database.
     # By doing so no extra query or join is needed to get the canteen, floor, and window of a dish.
     name: Mapped[str] = mapped_column(String(20), index=True, nullable=False)
@@ -170,12 +160,15 @@ class Carousel(Base):
     """
     This class is to be used for carousels.
     """
+
     __tablename__ = "carousels"
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True
     )
-    canteen: Mapped[int | None] = mapped_column(Integer, ForeignKey("canteens.id"), index=True, nullable=True)
+    canteen: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("canteens.id"), index=True, nullable=True
+    )
     image: Mapped[str] = mapped_column(Text)
     canteen_obj: Mapped["Canteen"] = relationship(back_populates="carousels")
 
@@ -184,6 +177,7 @@ class Feedback(Base):
     """
     This class is to be used for feedbacks.
     """
+
     __tablename__ = "feedbacks"
 
     id: Mapped[int] = mapped_column(
@@ -208,6 +202,7 @@ class Mark(Base):
     """
     This class is to be used for marks.
     """
+
     __tablename__ = "marks"
 
     id: Mapped[int] = mapped_column(
